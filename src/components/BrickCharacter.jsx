@@ -1,4 +1,4 @@
-import baseCharacterUrl from "../assets/brick-creative-character.png";
+import baseCharacterUrl from "../assets/pocket-capsule/brick-creative-character.png";
 import headphonesCharacterUrl from "../assets/pocket-capsule/character-headphones.png";
 import laptopCharacterUrl from "../assets/pocket-capsule/character-laptop.png";
 import bikeCharacterUrl from "../assets/pocket-capsule/character-bike.png";

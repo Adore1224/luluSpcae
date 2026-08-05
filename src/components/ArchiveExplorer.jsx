@@ -99,9 +99,6 @@ const ProjectDetailModal = ({ file, onClose }) => {
     <div
       className="project-detail-backdrop"
       role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
     >
       <section
         className={`project-detail-modal ${activePage.type === "overview" ? "is-overview" : "is-image-page"}`}
@@ -139,8 +136,24 @@ const ProjectDetailModal = ({ file, onClose }) => {
                 ? "PROJECT OVERVIEW"
                 : `项目截图 ${String(activePage.imageNumber).padStart(2, "0")}`}
             </span>
-            {activePage.type === "overview" && <h2>项目概览</h2>}
+            {activePage.type === "overview" && <h2>{project.name}</h2>}
             <p className="project-detail-summary">{activePage.description}</p>
+            {activePage.type === "overview" && (
+              <div className="project-overview-meta">
+                <div className="project-overview-type">
+                  <span>TYPE</span>
+                  <strong>{project.projectType ?? "项目"}</strong>
+                </div>
+                <div className="project-tech-stack">
+                  <span>技术热点</span>
+                  <div>
+                    {(project.technologies ?? []).map((technology) => (
+                      <em key={technology}>{technology}</em>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -263,7 +276,9 @@ const ArchiveExplorer = () => {
     const previousPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") setPreviewFile(null);
+      // Project chapters are deliberately closed only through their visible
+      // close button, so an accidental click or key press cannot lose context.
+      if (event.key === "Escape" && previewFile.type === "album") setPreviewFile(null);
     };
     const preventScroll = (event) => event.preventDefault();
     document.body.style.overflow = "hidden";
@@ -497,7 +512,7 @@ const ArchiveExplorer = () => {
 
                   <div className={`archive-entries view-${viewMode}`} role="listbox" aria-label="文件列表">
                     {entries.length === 0 ? (
-                      <div className="archive-empty-state">将照片放入 src/assets/picture 后，这里会自动出现。</div>
+                      <div className="archive-empty-state">文件放入 src/assets/picture/photo</div>
                     ) : entries.map((entry) => {
                       const isFolderEntry = entry.type === "folder" || entry.type === "project-folder";
                       const Icon = isFolderEntry

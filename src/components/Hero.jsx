@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { MapPin, Rotate3D } from "lucide-react";
 import { siteProfile } from "../data/siteContent";
-import avatarUrl from "../assets/avatar.jpg";
+import avatarUrl from "../assets/picture/avatar.jpg";
 import PersonalCapsule from "./PersonalCapsule";
 import BrickCharacter from "./BrickCharacter";
 

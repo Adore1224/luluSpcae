@@ -2,6 +2,13 @@ import qixiao1Url from "../assets/picture/qixiao1.png";
 import qixiao2Url from "../assets/picture/qixiao2.png";
 import qixiao3Url from "../assets/picture/qixiao3.png";
 import qixiao4Url from "../assets/picture/qixiao4.png";
+import mxai1Url from "../assets/picture/mxai1.png";
+import mxai2Url from "../assets/picture/mxai2.png";
+import mxai3Url from "../assets/picture/mxai3.png";
+import mxai4Url from "../assets/picture/mxai4.png";
+import mxai5Url from "../assets/picture/mxai5.png";
+import mxai6Url from "../assets/picture/mxai6.png";
+import mxai7Url from "../assets/picture/mxai7.png";
 import zkda1Url from "../assets/picture/zkda1.png";
 import zkda2Url from "../assets/picture/zkda2.png";
 import zpmf1Url from "../assets/picture/zpmf1.png";
@@ -12,11 +19,21 @@ import zpmf5Url from "../assets/picture/zpmf5.png";
 import zpmf6Url from "../assets/picture/zpmf6.png";
 import zpmf7Url from "../assets/picture/zpmf7.png";
 import zpmf8Url from "../assets/picture/zpmf8.png";
+import zigbee1Url from "../assets/picture/zigbee1.jpg";
+import zigbee2Url from "../assets/picture/zigbee2.png";
+import zigbee3Url from "../assets/picture/zigbee3.png";
+import zigbee4Url from "../assets/picture/zigbee4.png";
+import selflab1Url from "../assets/picture/selflab1.png";
+import selflab2Url from "../assets/picture/selflab2.png";
+import selflab3Url from "../assets/picture/selflab3.png";
+import selflab4Url from "../assets/picture/selflab4.png";
+import selflab5Url from "../assets/picture/selflab5.png";
+import selflab6Url from "../assets/picture/selflab6.png";
 
 
 
 const pictureModules = import.meta.glob(
-  "../assets/picture/*.{avif,jpeg,jpg,png,webp}",
+  "../assets/picture/photo/*.{avif,jpeg,jpg,png,webp}",
   { eager: true, import: "default", query: "?url" },
 );
 
@@ -48,6 +65,8 @@ export const siteProfile = {
 export const projects = [
   {
     id: "qixiao",
+    projectType: "落地项目",
+    technologies: ["Vue 3", "TypeScript", "Java Spring Boot", "MySQL", "UniApp", "Nginx", "Docker"],
     name: "课生万象",
     href: "https://www.skuture.com",
     overview: "“课生万象”是一个面向教培机构管理和运营的综合系统，围绕 教务、财务、数据、管理四个方向提供全方位的支持，助力机构高效运营、降本增效。",
@@ -72,34 +91,46 @@ export const projects = [
   },
   {
     id: "mxai",
+    projectType: "落地项目",
+    technologies: ["Agent", "WebSocket", "React", "Java", "PostgreSQL", "Redis", "Docker", "Http SSE", "Nginx"],
     name: "麦星AI",
     href: "https://mxai.myunlab.com/",
-    overview: "面向电商商家和运营人员，整合图片、视频与营销文案生成能力，将通用生成式AI能力封装为更贴近商品营销场景的内容生产工具，带有完整的支付/会员体系。",
+    overview: "面向电商商家和运营人员，整合图片、视频与营销文案生成能力，将通用生成式AI能力封装为更贴近商品营销场景的内容生产工具，具有完整的支付/会员体系。",
     gallery: [
       {
-        image: qixiao1Url,
-        description: "空间化日程的核心视觉实验：通过环形轨迹、前后景深与聚焦状态，让不同时间事件形成可感知的远近关系。",
-      },
-    ],
-  },
-  {
-    id: "zkda",
-    name: "智库底案(试运营)",
-    href: "http://47.109.76.18/",
-    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。(当前处于试运营阶段，部分功能不方便展示)",
-    gallery: [
-      {
-        image: zkda1Url,
-        description: "平台地图态势页面。",
+        image: mxai1Url,
+        description: "平台爆款专区页面，提供热门高质量的图片/视频模板。",
       },
       {
-        image: zkda2Url,
-        description: "平台每日简报页面。",
+        image: mxai2Url,
+        description: "平台图片创作Agent页面，通过系统设定的高质量提示词生成所选电商平台的目标图片。",
+      },
+      {
+        image: mxai3Url,
+        description: "平台视频创作Agent页面，通过系统设定的高质量提示词生成所选电商平台的目标视频。",
+      },
+      {
+        image: mxai4Url,
+        description: "平台文案创作Agent页面，通过系统设定的高质量提示词生成所选电商平台的目标营销文案。",
+      },
+      {
+        image: mxai5Url,
+        description: "平台百宝箱页面，提供各类工具辅助用户进行内容创作。",
+      },
+      {
+        image: mxai6Url,
+        description: "平台Agent工作页面，在画布展示生成的过程，生成后可对图片/视频进行编辑导出等操作",
+      },
+      {
+        image: mxai7Url,
+        description: "平台活动中心页面，包含会员订阅、积分订购、活动内容等板块。",
       },
     ],
   },
   {
     id: "zpmf",
+    projectType: "落地项目",
+    technologies: ["Dify", "node.js", "playwright", "React", "Nginx", "Python", "Java",  "Redis", "PostgreSQL", "Docker"],
     name: "智铺魔方",
     href: "",
     overview: "面向电商客服团队，提供企业级知识库问答、客服情景训练、员工考试考核及直播间智能回复，并配套本地自动化智能体完成店铺运营数据的分析与处理。",
@@ -137,7 +168,85 @@ export const projects = [
         description: "平台后台中心页面。",
       },
     ],
-  }
+  },
+  {
+    id: "zkda",
+    projectType: "待落地项目",
+    technologies: ["n8n", "Nginx", "Proxy", "React", "Python", "Java", "PostgreSQL", "Docker"],
+    name: "智库底案(试运营)",
+    href: "http://47.109.76.18/",
+    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。(当前处于试运营阶段，部分功能不方便展示)",
+    gallery: [
+      {
+        image: zkda1Url,
+        description: "平台地图态势页面。",
+      },
+      {
+        image: zkda2Url,
+        description: "平台每日简报页面。",
+      },
+    ],
+  },
+  {
+    id: "zigbee",
+    projectType: "实验项目",
+    technologies: ["嵌入式", "C / C++", "PCB", "电路设计", "Qt", "Zigbee", "AI"],
+    name: "物联网嵌入式项目",
+    href: "",
+    overview: "结合无线通信、数据融合、人工智能等技术实现对大棚无线传感网络的管理以及大棚作物生长环境的实时监测与适宜度评价系统。",
+    gallery: [
+      {
+        image: zigbee1Url,
+        description: "自己设计的采集端硬件模块实物，用于采集和传输传感器数据。",
+      },
+      {
+        image: zigbee2Url,
+        description: "硬件模块的PCB图，电路原理图就不放了，比较简单。",
+      },
+      {
+        image: zigbee3Url,
+        description: "系统桌面端上位机软件，用于管理和配置采集端硬件模块的界面。",
+      },
+      {
+        image: zigbee4Url,
+        description: "系统桌面端上位机软件，用于监控系统运行状态和数据处理的运行界面，包括部分算法的集成实现。",
+      },
+    ],
+  },
+  {
+    id: "selflab",
+    projectType: "实验项目",
+    technologies: ["React", "Nginx", "Java", "AI", "PostgreSQL", "Docker"],
+    name: "SelfLab",
+    href: "http://139.199.222.116/",
+    overview: "面向自媒体创作者，免费提供工具教程、创作引流变现指南、起号辅助等一站式辅助平台。（当前仅处于项目中期，内容并不完全符合需求，仅作为实验项目展示，且属于个人想法，不一定会结项）",
+    gallery: [
+      {
+        image: selflab1Url,
+        description: "平台概览首页（部分画面），展示入口。",
+      },
+      {
+        image: selflab2Url,
+        description: "平台指南页面，展示不同赛道的自媒体创作指南。",
+      },
+      {
+        image: selflab3Url,
+        description: "平台指南页面具体赛道的专属指南详情页。",
+      },
+      {
+        image: selflab4Url,
+        description: "平台资源页面的工具板块，展示搜集的不同类型的优质工具链接。",
+      },
+      {
+        image: selflab5Url,
+        description: "平台资源页面的教程板块，展示搜集的不同类型的优质视频或图文教程。",
+      },
+            {
+        image: selflab6Url,
+        description: "平台打造页面，选定赛道和AI助手一起打造自媒体账号。",
+      },
+    ],
+  },
 ];
 
 export const archiveFolders = [
@@ -146,7 +255,7 @@ export const archiveFolders = [
     label: "个人项目",
     englishLabel: "Projects",
     color: "#d9b06f",
-    description: "做过的完整可用项目",
+    description: "做过的落地项目和实验项目",
     icon: "briefcase",
     files: projects.map((project) => ({
       id: project.id,
@@ -169,34 +278,14 @@ export const archiveFolders = [
     icon: "sparkles",
     files: [
       {
-        id: "fluid",
-        name: "fluid-background.shader",
-        displayName: "流体光场",
+        id: "game",
+        name: "game",
+        displayName: "小游戏",
         type: "experiment",
         size: "GLSL",
         modified: "今天",
-        tags: ["Shader", "WebGL"],
-        content: "一张会呼吸、也会回应鼠标移动的柔性数字底布。",
-      },
-      {
-        id: "orbit",
-        name: "idea-orbit.scene",
-        displayName: "灵感生态舱",
-        type: "experiment",
-        size: "Three.js",
-        modified: "今天",
-        tags: ["R3F", "3D"],
-        content: "把兴趣做成围绕核心缓慢运动的几何物件，并与页面目录连接。",
-      },
-      {
-        id: "motion",
-        name: "micro-motion.lab",
-        displayName: "微动效练习",
-        type: "experiment",
-        size: "Motion",
-        modified: "本周",
-        tags: ["Framer Motion"],
-        content: "研究怎样用很小的位移、惯性与延迟，让界面显得更有触感。",
+        tags: ["Cocos", "Godot"],
+        content: "想试试做个小型游戏，也许是手机端小程序的，也可能是PC端的。类型还没确定，应该是2D/2.5D游戏。目前正在琢磨游戏玩法和机制。试试看吧！GoGoGo!",
       },
     ],
   },
@@ -220,24 +309,24 @@ export const archiveFolders = [
       {
         id: "details",
         name: "craft-lives-in-details.note",
-        displayName: "细节里的手艺",
+        displayName: "怎么对抗人性",
         type: "note",
         size: "2 min read",
         modified: "本周",
-        tags: ["设计思考"],
+        tags: ["思考"],
         content:
-          "好的体验不只存在于第一眼，也存在于空状态、等待、退出和那些没人提醒你的边缘情况。界面的可靠感，往往来自这些不显眼的地方。",
+          "对抗人性不是自我阉割，而是用理性驾驭本能。我们无法消灭贪婪、懒惰或恐惧，但能通过制度与环境设计来引导——如用自动储蓄对抗消费冲动，用公开承诺抵御懈怠。这场博弈的精髓在于放弃正面强攻，转而布设“认知陷阱”：让正确选择成为最舒适的选择。真正的胜利不是你战胜了人性，而是你学会了与它共舞，并悄悄改变了舞步的方向。",
       },
       {
         id: "ambiguity",
         name: "from-ambiguity.note",
-        displayName: "从模糊到清晰",
+        displayName: "AI浪潮中的生存",
         type: "note",
         size: "3 min read",
-        modified: "四月",
-        tags: ["方法"],
+        modified: "本周",
+        tags: ["思考"],
         content:
-          "面对模糊的问题时，我习惯先寻找可以验证的最小切口。清晰不是一开始就知道答案，而是知道下一步应该验证什么。",
+          "当AI在计算与模式识别上碾压人类时，我们的价值转向感性、创造与意义构建。与其在AI擅长的领域比快，不如深耕它无法复制的领域：提出好问题的能力、在不确定中决策的勇气、对美的独特感悟。未来属于“骑手型”人才——他们驾驭AI工具，却始终紧握价值观的方向盘。记住：AI越强大，人类那些“无用的热爱”和“看似低效的思考”就越显珍贵。",
       },
     ],
   },
