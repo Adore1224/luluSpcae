@@ -9904,3 +9904,20 @@ main,
     animation: none;
   }
 }
+
+/* All rectangular UI panels use the same four-corner geometry. */
+.hero-note,
+.part-block,
+.nursery-monitor::before,
+.process-inspector,
+.life-road-card,
+.life-road-stop.is-left .life-road-card,
+.life-road-stop.is-right .life-road-card,
+.journey-event-card {
+  border-radius: 18px;
+}
+
+.project-page-nav.is-prev,
+.project-page-nav.is-next {
+  border-radius: 16px;
+}

@@ -9,12 +9,21 @@ import EntryLoader from "./components/EntryLoader";
 import CursorTrail from "./components/CursorTrail";
 import ScrollDecorations from "./components/ScrollDecorations";
 import MusicPlayer from "./components/MusicPlayer";
+import ExploreCenter from "./components/ExploreCenter";
+import ArchitectureGuide from "./components/ArchitectureGuide";
+import { ChatGPTCodexGuide, ExtensionSystemGuide } from "./components/KnowledgeGuides";
 import "./App.css";
+import "./Explore.css";
+import "./Guide.css";
 
 const getArchiveViewportOffset = () => Math.min(128, Math.max(76, window.innerHeight * 0.1));
 
 function App() {
   const [badgeFlipped, setBadgeFlipped] = useState(false);
+  const [location, setLocation] = useState(() => ({
+    pathname: window.location.pathname.replace(/\/+$/, "") || "/",
+    hash: window.location.hash,
+  }));
   const rainDrops = useMemo(
     () => Array.from({ length: 16 }, (_, index) => ({
       id: index,
@@ -27,10 +36,44 @@ function App() {
     [],
   );
 
+  const navigate = (target) => {
+    const next = new URL(target, window.location.origin);
+    window.history.pushState(null, "", `${next.pathname}${next.hash}`);
+    setLocation({
+      pathname: next.pathname.replace(/\/+$/, "") || "/",
+      hash: next.hash,
+    });
+  };
+
   useEffect(() => {
-    if (!window.location.hash) return undefined;
+    const handlePopState = () => setLocation({
+      pathname: window.location.pathname.replace(/\/+$/, "") || "/",
+      hash: window.location.hash,
+    });
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const titles = {
+      "/": "Lulu 个人空间",
+      "/explore": "探索中心 · Lulu",
+      "/explore/commercial-architecture": "商用项目架构指南 · 探索中心",
+      "/explore/chatgpt-codex-workflow": "ChatGPT 与 Codex 高效工作流 · 探索中心",
+      "/explore/mcp-skills-plugins": "MCP、Skill 与插件指南 · 探索中心",
+    };
+    document.title = titles[location.pathname] ?? "探索中心 · Lulu";
+
+    if (location.pathname !== "/") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return undefined;
+    }
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return undefined;
+    }
     const timer = window.setTimeout(() => {
-      const hash = window.location.hash;
+      const hash = location.hash;
       const target = hash === "#archive"
         ? document.querySelector("#archive .archive-window") ?? document.querySelector("#archive")
         : document.querySelector(hash);
@@ -52,11 +95,41 @@ function App() {
       window.scrollTo({ top: Math.max(0, targetTop - chapterOffset) });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [location]);
+
+  const renderPage = () => {
+    if (location.pathname === "/explore/chatgpt-codex-workflow") {
+      return <ChatGPTCodexGuide onNavigate={navigate} />;
+    }
+    if (location.pathname === "/explore/mcp-skills-plugins") {
+      return <ExtensionSystemGuide onNavigate={navigate} />;
+    }
+    if (location.pathname === "/explore/commercial-architecture") {
+      return <ArchitectureGuide onNavigate={navigate} />;
+    }
+    if (location.pathname === "/explore") {
+      return <ExploreCenter onNavigate={navigate} />;
+    }
+
+    return (
+      <>
+        <motion.main
+          id="main-content"
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Hero badgeFlipped={badgeFlipped} onBadgeFlipChange={setBadgeFlipped} />
+          <ArchiveExplorer />
+        </motion.main>
+        <Footer />
+      </>
+    );
+  };
 
   return (
     <div className={`app-shell ${badgeFlipped ? "is-rainy" : ""}`}>
-      <EntryLoader />
+      {location.pathname === "/" && <EntryLoader />}
       <AmbientBackground />
       <div className={`rain-overlay ${badgeFlipped ? "is-active" : ""}`} aria-hidden="true">
         {rainDrops.map((drop) => (
@@ -73,22 +146,12 @@ function App() {
           />
         ))}
       </div>
-      <ScrollDecorations rainy={badgeFlipped} />
+      {location.pathname === "/" && <ScrollDecorations rainy={badgeFlipped} />}
       <CursorTrail />
-      <MusicPlayer />
-      <Header />
+      {location.pathname === "/" && <MusicPlayer />}
+      <Header currentPath={location.pathname} onNavigate={navigate} />
 
-      <motion.main
-        id="main-content"
-        initial={false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Hero badgeFlipped={badgeFlipped} onBadgeFlipChange={setBadgeFlipped} />
-        <ArchiveExplorer />
-      </motion.main>
-
-      <Footer />
+      {renderPage()}
 
     </div>
   );

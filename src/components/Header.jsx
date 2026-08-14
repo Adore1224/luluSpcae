@@ -61,10 +61,18 @@ const getSectionInView = () => {
     .sort((a, b) => a.distance - b.distance)[0]?.id ?? null;
 };
 
-const Header = () => {
+const Header = ({ currentPath = "/", onNavigate }) => {
   const [activeSection, setActiveSection] = useState("home");
 
   const navigateToSection = (event, href) => {
+    if (currentPath !== "/") {
+      if (onNavigate) {
+        event.preventDefault();
+        onNavigate(`/${href}`);
+      }
+      return;
+    }
+
     event.preventDefault();
     const target = getNavigationTarget(href);
     if (!target) return;
@@ -87,6 +95,8 @@ const Header = () => {
   };
 
   useEffect(() => {
+    if (currentPath !== "/") return undefined;
+
     let frame = 0;
     let lastSection = window.location.hash.replace("#", "") || "home";
 
@@ -117,7 +127,13 @@ const Header = () => {
       window.removeEventListener("scroll", requestSync);
       window.removeEventListener("resize", requestSync);
     };
-  }, []);
+  }, [currentPath]);
+
+  const navigateToExplore = (event) => {
+    if (!onNavigate) return;
+    event.preventDefault();
+    onNavigate("/explore");
+  };
 
   return (
     <motion.header
@@ -128,7 +144,7 @@ const Header = () => {
     >
       <a
         className="nav-brand"
-        href="#home"
+        href="/#home"
         aria-label="返回主页"
         onClick={(event) => navigateToSection(event, "#home")}
       >
@@ -138,13 +154,20 @@ const Header = () => {
         {navItems.map((item) => (
           <a
             key={item.href}
-            className={activeSection === item.href.slice(1) ? "is-active" : ""}
-            href={item.href}
+            className={currentPath === "/" && activeSection === item.href.slice(1) ? "is-active" : ""}
+            href={`/${item.href}`}
             onClick={(event) => navigateToSection(event, item.href)}
           >
             {item.label}
           </a>
         ))}
+        <a
+          className={`nav-explore ${currentPath.startsWith("/explore") ? "is-active" : ""}`}
+          href="/explore"
+          onClick={navigateToExplore}
+        >
+          点我探索
+        </a>
       </nav>
     </motion.header>
   );
