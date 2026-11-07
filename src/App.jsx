@@ -8,7 +8,6 @@ import AmbientBackground from "./components/AmbientBackground";
 import EntryLoader from "./components/EntryLoader";
 import CursorTrail from "./components/CursorTrail";
 import ScrollDecorations from "./components/ScrollDecorations";
-import MusicPlayer from "./components/MusicPlayer";
 import ExploreCenter from "./components/ExploreCenter";
 import ArchitectureGuide from "./components/ArchitectureGuide";
 import { ChatGPTCodexGuide, ExtensionSystemGuide } from "./components/KnowledgeGuides";
@@ -148,7 +147,6 @@ function App() {
       </div>
       {location.pathname === "/" && <ScrollDecorations rainy={badgeFlipped} />}
       <CursorTrail />
-      {location.pathname === "/" && <MusicPlayer />}
       <Header currentPath={location.pathname} onNavigate={navigate} />
 
       {renderPage()}

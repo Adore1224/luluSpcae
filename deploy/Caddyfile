@@ -1,0 +1,3 @@
+lululab.site {
+    reverse_proxy app:4178
+}

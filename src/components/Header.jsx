@@ -166,7 +166,7 @@ const Header = ({ currentPath = "/", onNavigate }) => {
           href="/explore"
           onClick={navigateToExplore}
         >
-          点我探索
+          探索更多
         </a>
       </nav>
     </motion.header>

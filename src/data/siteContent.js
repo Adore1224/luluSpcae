@@ -11,6 +11,10 @@ import mxai6Url from "../assets/picture/mxai6.png";
 import mxai7Url from "../assets/picture/mxai7.png";
 import zkda1Url from "../assets/picture/zkda1.png";
 import zkda2Url from "../assets/picture/zkda2.png";
+import zkda3Url from "../assets/picture/zkda3.png";
+import mscc1Url from "../assets/picture/mscc1.jpg";
+import mscc2Url from "../assets/picture/mscc2.jpg";
+import mscc3Url from "../assets/picture/mscc3.jpg";
 import zpmf1Url from "../assets/picture/zpmf1.png";
 import zpmf2Url from "../assets/picture/zpmf2.png";
 import zpmf3Url from "../assets/picture/zpmf3.png";
@@ -29,27 +33,6 @@ import selflab3Url from "../assets/picture/selflab3.png";
 import selflab4Url from "../assets/picture/selflab4.png";
 import selflab5Url from "../assets/picture/selflab5.png";
 import selflab6Url from "../assets/picture/selflab6.png";
-
-
-
-const pictureModules = import.meta.glob(
-  "../assets/picture/photo/*.{avif,jpeg,jpg,png,webp}",
-  { eager: true, import: "default", query: "?url" },
-);
-
-const pictureGallery = Object.entries(pictureModules)
-  .sort(([first], [second]) => first.localeCompare(second, "zh-CN"))
-  .map(([path, thumbnail], index) => ({
-    id: `picture-${index + 1}`,
-    name: path.split("/").pop() ?? `picture-${index + 1}`,
-    displayName: `照片 ${String(index + 1).padStart(2, "0")}`,
-    type: "album",
-    size: "image",
-    modified: "",
-    tags: [],
-    thumbnail,
-  }));
-
 export const siteProfile = {
   name: "Lulu",
   chineseName: "王培聪",
@@ -170,12 +153,35 @@ export const projects = [
     ],
   },
   {
+    id: "mscc",
+    projectType: "落地项目",
+    technologies: ["微信小程序", "uni-app x", "UTS", "TypeScript", "Node.js", "Fastify", "Drizzle ORM", "MySQL", "CloudBase 云托管", "微信支付", "Docker"],
+    name: "买手川川",
+    href: "",
+    imageFit: "contain",
+    overview: "“买手川川”是一款面向日常消费优惠场景的微信小程序，整合餐饮代下单与会员权益直充服务。用户可按城市与附近门店选购餐饮商品，在线支付后查看取餐码，也可分类检索音视频、办公教育、生活工具等会员权益并完成充值。系统打通微信登录、支付、供应商履约、订单状态同步及退款售后，并提供用户、订单和经营数据等管理员运营能力。",
+    gallery: [
+      {
+        image: mscc1Url,
+        description: "小程序餐饮代下单首页，支持定位或手动选择城市，按品牌查找附近门店并进入选购。",
+      },
+      {
+        image: mscc2Url,
+        description: "小程序权益直充页面，按会员类型与品牌分类展示商品，支持关键词搜索、规格选择及在线购买。",
+      },
+      {
+        image: mscc3Url,
+        description: "小程序订单中心，按待支付、处理中、已完成、已取消及退款售后等状态查看订单，支持查询订单详情与取餐码。",
+      },
+    ],
+  },
+  {
     id: "zkda",
     projectType: "待落地项目",
     technologies: ["n8n", "Nginx", "Proxy", "React", "Python", "Java", "PostgreSQL", "Docker"],
     name: "智库底案(试运营)",
     href: "http://47.109.76.18/",
-    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。(当前处于试运营阶段，部分功能不方便展示)",
+    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。配套数据看板可视化展示主题分布、来源机构、地区热度与简报数量趋势，辅助快速掌握信息动态。(当前处于试运营阶段，部分功能不方便展示)",
     gallery: [
       {
         image: zkda1Url,
@@ -184,6 +190,11 @@ export const projects = [
       {
         image: zkda2Url,
         description: "平台每日简报页面。",
+      },
+      {
+        image: zkda3Url,
+        imageFit: "contain",
+        description: "平台数据看板页面，汇总全球智库大事件，展示主题分布、来源机构排名、地区热度及各期简报数量趋势。",
       },
     ],
   },
@@ -244,89 +255,6 @@ export const projects = [
             {
         image: selflab6Url,
         description: "平台打造页面，选定赛道和AI助手一起打造自媒体账号。",
-      },
-    ],
-  },
-];
-
-export const archiveFolders = [
-  {
-    id: "projects",
-    label: "个人项目",
-    englishLabel: "Projects",
-    color: "#d9b06f",
-    description: "做过的落地项目和实验项目",
-    icon: "briefcase",
-    files: projects.map((project) => ({
-      id: project.id,
-      name: `${project.id}/`,
-      displayName: project.name,
-      type: "project-folder",
-      size: "Project",
-      modified: "",
-      tags: [],
-      content: project,
-      thumbnail: project.gallery[0]?.image,
-    })),
-  },
-  {
-    id: "experiments",
-    label: "待做任务",
-    englishLabel: "Experiments",
-    color: "#76bd9c",
-    description: "有想法开启的下一个项目任务",
-    icon: "sparkles",
-    files: [
-      {
-        id: "game",
-        name: "game",
-        displayName: "小游戏",
-        type: "experiment",
-        size: "GLSL",
-        modified: "今天",
-        tags: ["Cocos", "Godot"],
-        content: "想试试做个小型游戏，也许是手机端小程序的，也可能是PC端的。类型还没确定，应该是2D/2.5D游戏。目前正在琢磨游戏玩法和机制。试试看吧！GoGoGo!",
-      },
-    ],
-  },
-  {
-    id: "photos",
-    label: "照片图库",
-    englishLabel: "Photo Gallery",
-    color: "#df918b",
-    description: "不经意间留下的那一瞬",
-    icon: "camera",
-    files: pictureGallery,
-  },
-  {
-    id: "notes",
-    label: "灵感随笔",
-    englishLabel: "Notes",
-    color: "#a993d1",
-    description: "生活中奇思妙想产生的随笔",
-    icon: "note",
-    files: [
-      {
-        id: "details",
-        name: "craft-lives-in-details.note",
-        displayName: "怎么对抗人性",
-        type: "note",
-        size: "2 min read",
-        modified: "本周",
-        tags: ["思考"],
-        content:
-          "对抗人性不是自我阉割，而是用理性驾驭本能。我们无法消灭贪婪、懒惰或恐惧，但能通过制度与环境设计来引导——如用自动储蓄对抗消费冲动，用公开承诺抵御懈怠。这场博弈的精髓在于放弃正面强攻，转而布设“认知陷阱”：让正确选择成为最舒适的选择。真正的胜利不是你战胜了人性，而是你学会了与它共舞，并悄悄改变了舞步的方向。",
-      },
-      {
-        id: "ambiguity",
-        name: "from-ambiguity.note",
-        displayName: "AI浪潮中的生存",
-        type: "note",
-        size: "3 min read",
-        modified: "本周",
-        tags: ["思考"],
-        content:
-          "当AI在计算与模式识别上碾压人类时，我们的价值转向感性、创造与意义构建。与其在AI擅长的领域比快，不如深耕它无法复制的领域：提出好问题的能力、在不确定中决策的勇气、对美的独特感悟。未来属于“骑手型”人才——他们驾驭AI工具，却始终紧握价值观的方向盘。记住：AI越强大，人类那些“无用的热爱”和“看似低效的思考”就越显珍贵。",
       },
     ],
   },

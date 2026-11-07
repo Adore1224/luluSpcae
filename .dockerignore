@@ -1,0 +1,9 @@
+**
+!package.json
+!package-lock.json
+!index.html
+!vite.config.js
+!server/
+!server/**
+!src/
+!src/**

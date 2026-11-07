@@ -6,7 +6,7 @@ import avatarUrl from "../assets/picture/avatar.jpg";
 import PersonalCapsule from "./PersonalCapsule";
 import BrickCharacter from "./BrickCharacter";
 
-const HangingBadge = ({ flipped, onFlippedChange }) => {
+export const HangingBadge = ({ flipped, onFlippedChange }) => {
   const rigRef = useRef(null);
   const tiltRef = useRef(null);
 
@@ -134,13 +134,6 @@ const HangingBadge = ({ flipped, onFlippedChange }) => {
 const Hero = ({ badgeFlipped, onBadgeFlipChange }) => {
   const [activePocketItem, setActivePocketItem] = useState(null);
 
-  const handlePocketItemSelect = (itemId) => {
-    setActivePocketItem(itemId);
-    window.dispatchEvent(new CustomEvent(
-      itemId === "headphones" ? "lulu:audio-play" : "lulu:audio-pause",
-    ));
-  };
-
   return (
     <section id="home" className="hero-section immersive-hero hero-object-layout">
       <HangingBadge flipped={badgeFlipped} onFlippedChange={onBadgeFlipChange} />
@@ -148,7 +141,7 @@ const Hero = ({ badgeFlipped, onBadgeFlipChange }) => {
       <div className="hero-center-stage">
         <PersonalCapsule
           activeItem={activePocketItem}
-          onSelectItem={handlePocketItemSelect}
+          onSelectItem={setActivePocketItem}
         />
       </div>
 

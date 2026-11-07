@@ -22,7 +22,8 @@ import {
   StickyNote,
   X,
 } from "lucide-react";
-import { archiveFolders, siteProfile } from "../data/siteContent";
+import { archiveFolders } from "../data/archiveContent";
+import { siteProfile } from "../data/siteContent";
 import AmbientBubbles from "./AmbientBubbles";
 
 const folderIcons = {
@@ -83,6 +84,7 @@ const ProjectDetailModal = ({ file, onClose }) => {
     ...(project?.gallery ?? []).map((item, index) => ({
       type: "image",
       image: item.image,
+      imageFit: item.imageFit ?? project.imageFit,
       description: item.description,
       imageNumber: index + 1,
     })),
@@ -163,6 +165,7 @@ const ProjectDetailModal = ({ file, onClose }) => {
               <img
                 src={activePage.image}
                 alt={`${project.name} 项目截图 ${activePage.imageNumber}`}
+                style={activePage.imageFit ? { objectFit: activePage.imageFit } : undefined}
               />
             </figure>
           </div>

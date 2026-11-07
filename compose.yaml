@@ -1,0 +1,42 @@
+name: lululab
+
+services:
+  app:
+    build: .
+    init: true
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: "4178"
+      LAB_DATA_DIR: /var/lib/lululab/data
+    ports:
+      - "127.0.0.1:${LULULAB_BIND_PORT:-4178}:4178"
+    volumes:
+      - app_data:/var/lib/lululab
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4178/api/home').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: [https]
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  app_data:
+  caddy_data:
+  caddy_config:
