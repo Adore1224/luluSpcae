@@ -2,7 +2,10 @@ name: lululab
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_IMAGE: ${LULULAB_NODE_IMAGE:-node:22-bookworm-slim}
     init: true
     restart: unless-stopped
     env_file: .env
@@ -22,7 +25,7 @@ services:
       start_period: 10s
 
   caddy:
-    image: caddy:2-alpine
+    image: ${LULULAB_CADDY_IMAGE:-caddy:2-alpine}
     profiles: [https]
     restart: unless-stopped
     depends_on:

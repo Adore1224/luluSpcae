@@ -39,6 +39,13 @@ Lulu 的个人工作室。公开站包含一屏首页、项目档案及图集、
 
 4. 用 `docker compose ps` 和 `docker compose logs --tail=80 app` 检查应用。使用内置 Caddy 时可用 `docker compose --profile https logs --tail=80 caddy` 查看证书或反代状态。打开首页和 `https://lululab.site/workbench` 验证。4178 仅绑定在宿主机回环地址，公开入口使用 HTTPS。
 
+腾讯云实例直连 Docker Hub 超时时，可在服务器的 `.env` 为本站单独指定 [腾讯云内网镜像源](https://cloud.tencent.com/document/practice/1207/45596)：
+
+```dotenv
+LULULAB_NODE_IMAGE=mirror.ccs.tencentyun.com/library/node:22-bookworm-slim
+LULULAB_CADDY_IMAGE=mirror.ccs.tencentyun.com/library/caddy:2-alpine
+```
+
 推送更新后，服务器可通过 Git 快进更新和 Compose 重建部署新版本。内置 Caddy 模式下执行：
 
 ```bash

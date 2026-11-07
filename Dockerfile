@@ -1,4 +1,5 @@
-FROM node:22-bookworm-slim AS build
+ARG NODE_IMAGE=node:22-bookworm-slim
+FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -9,7 +10,7 @@ COPY server/ ./server/
 COPY src/ ./src/
 RUN npm run build
 
-FROM node:22-bookworm-slim
+FROM ${NODE_IMAGE}
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=4178 LAB_DATA_DIR=/var/lib/lululab/data
 WORKDIR /app
 
