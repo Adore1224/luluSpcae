@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import ArchiveExplorer from "./components/ArchiveExplorer";
-import Footer from "./components/Footer";
 import AmbientBackground from "./components/AmbientBackground";
 import EntryLoader from "./components/EntryLoader";
 import CursorTrail from "./components/CursorTrail";
@@ -77,9 +76,7 @@ function App() {
         ? document.querySelector("#archive .archive-window") ?? document.querySelector("#archive")
         : document.querySelector(hash);
       if (!target) return;
-      let targetTop = hash === "#journey"
-        ? Math.max(0, (document.scrollingElement ?? document.documentElement).scrollHeight - window.innerHeight)
-        : window.scrollY + target.getBoundingClientRect().top;
+      let targetTop = window.scrollY + target.getBoundingClientRect().top;
       if (hash === "#archive") {
         targetTop = 0;
         let current = target;
@@ -121,7 +118,6 @@ function App() {
           <Hero badgeFlipped={badgeFlipped} onBadgeFlipChange={setBadgeFlipped} />
           <ArchiveExplorer />
         </motion.main>
-        <Footer />
       </>
     );
   };

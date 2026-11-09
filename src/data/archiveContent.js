@@ -7,7 +7,7 @@ export const archiveFolders = [
     label: "个人项目",
     englishLabel: "Projects",
     color: "#d9b06f",
-    description: "做过的落地项目和实验项目",
+    description: "个人项目与工程实践",
     icon: "briefcase",
     files: projects.map((project) => ({
       id: project.id,

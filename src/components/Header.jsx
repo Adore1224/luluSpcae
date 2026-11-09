@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 const navItems = [
   { label: "个人主页", href: "#home" },
   { label: "个人终端", href: "#archive" },
-  { label: "个人历程", href: "#journey" },
 ];
 
 const getNavigationTarget = (href) => {
@@ -26,11 +25,6 @@ const getLayoutTop = (element) => {
   return top;
 };
 
-const getDocumentBottomTop = () => {
-  const scrollingElement = document.scrollingElement ?? document.documentElement;
-  return Math.max(0, scrollingElement.scrollHeight - window.innerHeight);
-};
-
 const getArchiveViewportOffset = () => Math.min(128, Math.max(76, window.innerHeight * 0.1));
 
 const getSectionInView = () => {
@@ -38,10 +32,6 @@ const getSectionInView = () => {
     .map(({ href }) => document.querySelector(href))
     .filter(Boolean);
   if (!sections.length) return null;
-
-  const scrollingElement = document.scrollingElement ?? document.documentElement;
-  const maximumScroll = Math.max(0, scrollingElement.scrollHeight - window.innerHeight);
-  if (maximumScroll - window.scrollY < 8) return "journey";
 
   const anchorY = window.innerHeight * 0.45;
   const containingSection = sections.find((section) => {
@@ -78,11 +68,9 @@ const Header = ({ currentPath = "/", onNavigate }) => {
     if (!target) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const targetTop = href === "#journey"
-      ? getDocumentBottomTop()
-      : href === "#archive"
-        ? getLayoutTop(target)
-        : window.scrollY + target.getBoundingClientRect().top;
+    const targetTop = href === "#archive"
+      ? getLayoutTop(target)
+      : window.scrollY + target.getBoundingClientRect().top;
     const chapterOffset = href === "#archive"
       ? getArchiveViewportOffset()
       : 0;

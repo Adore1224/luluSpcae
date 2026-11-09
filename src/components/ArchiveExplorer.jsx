@@ -142,10 +142,6 @@ const ProjectDetailModal = ({ file, onClose }) => {
             <p className="project-detail-summary">{activePage.description}</p>
             {activePage.type === "overview" && (
               <div className="project-overview-meta">
-                <div className="project-overview-type">
-                  <span>TYPE</span>
-                  <strong>{project.projectType ?? "项目"}</strong>
-                </div>
                 <div className="project-tech-stack">
                   <span>技术热点</span>
                   <div>

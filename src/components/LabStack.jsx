@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import { LabFooter } from './LabMotion';
 
 // Modules scroll inside their own surface. The footer is a second, overlaid card.
-export default function LabStack({ header, children, enabled = true, home = false }) {
+export default function LabStack({ header, children, enabled = true, home = false, scrollKey }) {
   const [open, setOpen] = useState(false);
   const scroller = useRef(null);
   const deck = useRef(null);
@@ -14,6 +14,10 @@ export default function LabStack({ header, children, enabled = true, home = fals
     setOpen(true);
   }, [enabled]);
   const closeFooter = useCallback(() => setOpen(false), []);
+
+  useLayoutEffect(() => {
+    scroller.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [scrollKey]);
 
   useEffect(() => {
     if (open) {
@@ -94,6 +98,7 @@ export default function LabStack({ header, children, enabled = true, home = fals
     <div className={`lab-surface${open ? ' is-stacked' : ''}`} inert={open} onClick={(event) => {
       if (event.target.closest('a[href="#lab-footer"]')) { event.preventDefault(); openFooter(); }
     }}>
+      <a className="skip-link" href="#main-content">跳到主要内容</a>
       {header}
       <div className="lab-surface-scroll" ref={scroller} tabIndex={-1}>
         {children}

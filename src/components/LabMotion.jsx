@@ -36,6 +36,7 @@ export function LabOrbit() {
       const t = (time - start) / 1000;
       const r = Math.min(w, h) * (w < 650 ? 0.43 : 0.41);
       if (!r) return;
+      const centerRadius = Math.min(24, 8 + r * .045);
       ctx.clearRect(0, 0, w, h);
       ctx.save();
       ctx.translate(w * (w < 650 ? 0.69 : 0.72), h * 0.49);
@@ -55,10 +56,13 @@ export function LabOrbit() {
         fade.addColorStop(0, `rgba(16,18,17,${alpha})`);
         fade.addColorStop(.4, `rgba(16,18,17,${alpha * .48})`);
         fade.addColorStop(1, 'rgba(16,18,17,0)');
-        ctx.fillStyle = fade; ctx.fillRect(8, -ray.width / 2, len, ray.width); ctx.restore();
+        ctx.fillStyle = fade;
+        ctx.fillRect(centerRadius, -ray.width / 2, 8 + len - centerRadius, ray.width);
+        ctx.restore();
       }
       ctx.restore();
 
+      ctx.save();
       ctx.rotate(t * .08);
       const scale = 1 + Math.sin(t * .8) * .01;
       ctx.scale(scale, scale);
@@ -68,6 +72,20 @@ export function LabOrbit() {
         ctx.globalAlpha = edge ? .28 + .21 * Math.sin(t * dot.speed * 3 + dot.phase) : .28 + .11 * Math.sin(t * dot.speed + dot.phase);
         ctx.fillRect(dot.x * r, dot.y * r, dot.size, dot.size);
       }
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, centerRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#e5ece2';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(38, 56, 44, 0.42)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#3a5142';
+      ctx.font = `750 ${centerRadius * .9}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('AI', 0, 1);
       ctx.restore();
     };
     const tick = (time) => { draw(time); frame = requestAnimationFrame(tick); };

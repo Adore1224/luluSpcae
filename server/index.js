@@ -4,11 +4,13 @@ import { stat } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLabApi } from './api.js';
+import { workbenchFrameOrigins } from './workbench.js';
 
 const root = fileURLToPath(new URL('../dist/', import.meta.url));
 const port = Number(process.env.PORT || 4178);
 const host = process.env.HOST || '127.0.0.1';
 const api = createLabApi();
+const frameOrigins = workbenchFrameOrigins(process.env);
 const types = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
@@ -26,13 +28,15 @@ async function serve(req, res) {
   const file = await stat(filename).catch(() => null);
   if (!file?.isFile()) { res.writeHead(404); res.end(); return; }
   const privatePage = /^\/workbench\/?$/.test(path);
+  const remoteImages = privatePage || /^\/projects(?:\/|$)/.test(path) ? ' https:' : '';
+  const frames = privatePage && frameOrigins.length ? frameOrigins.join(' ') : "'none'";
   res.writeHead(asset || publicPage.test(path) ? 200 : 404, {
     'Content-Type': types[extname(filename)] ?? 'application/octet-stream',
     'Content-Length': file.size,
     'Cache-Control': asset ? 'public, max-age=31536000, immutable' : privatePage ? 'no-store' : 'no-cache',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+    'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:${remoteImages}; frame-src ${frames}; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`,
     ...(privatePage ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
   });
   if (req.method === 'HEAD') { res.end(); return; }

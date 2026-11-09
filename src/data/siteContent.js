@@ -2,6 +2,7 @@ import qixiao1Url from "../assets/picture/qixiao1.png";
 import qixiao2Url from "../assets/picture/qixiao2.png";
 import qixiao3Url from "../assets/picture/qixiao3.png";
 import qixiao4Url from "../assets/picture/qixiao4.png";
+import qixiaoCodeUrl from "../assets/picture/qixiao_code.jpg";
 import mxai1Url from "../assets/picture/mxai1.png";
 import mxai2Url from "../assets/picture/mxai2.png";
 import mxai3Url from "../assets/picture/mxai3.png";
@@ -12,9 +13,7 @@ import mxai7Url from "../assets/picture/mxai7.png";
 import zkda1Url from "../assets/picture/zkda1.png";
 import zkda2Url from "../assets/picture/zkda2.png";
 import zkda3Url from "../assets/picture/zkda3.png";
-import mscc1Url from "../assets/picture/mscc1.jpg";
-import mscc2Url from "../assets/picture/mscc2.jpg";
-import mscc3Url from "../assets/picture/mscc3.jpg";
+import msccCodeUrl from "../assets/picture/mscc_code.jpg";
 import zpmf1Url from "../assets/picture/zpmf1.png";
 import zpmf2Url from "../assets/picture/zpmf2.png";
 import zpmf3Url from "../assets/picture/zpmf3.png";
@@ -48,11 +47,12 @@ export const siteProfile = {
 export const projects = [
   {
     id: "qixiao",
-    projectType: "落地项目",
     technologies: ["Vue 3", "TypeScript", "Java Spring Boot", "MySQL", "UniApp", "Nginx", "Docker"],
     name: "课生万象",
     href: "https://www.skuture.com",
-    overview: "“课生万象”是一个面向教培机构管理和运营的综合系统，围绕 教务、财务、数据、管理四个方向提供全方位的支持，助力机构高效运营、降本增效。",
+    qrCode: qixiaoCodeUrl,
+    overview: "课生万象是面向教培机构的管理系统，覆盖教务、财务、经营数据和校区管理。",
+    platformSummary: "Web 管理端与微信小程序端协同使用。教师可在小程序查看课表、班级并处理考勤，学员与家长可查课表、扫码签到、查看或支付课程订单。",
     gallery: [
       {
         image: qixiao1Url,
@@ -74,7 +74,6 @@ export const projects = [
   },
   {
     id: "mxai",
-    projectType: "落地项目",
     technologies: ["Agent", "WebSocket", "React", "Java", "PostgreSQL", "Redis", "Docker", "Http SSE", "Nginx"],
     name: "麦星AI",
     href: "https://mxai.myunlab.com/",
@@ -111,8 +110,39 @@ export const projects = [
     ],
   },
   {
+    id: "zkda",
+    technologies: ["n8n", "Nginx", "Proxy", "React", "Python", "Java", "PostgreSQL", "Docker"],
+    name: "智库底案",
+    href: "http://47.109.76.18/",
+    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。配套数据看板可视化展示主题分布、来源机构、地区热度与简报数量趋势，辅助快速掌握信息动态。(当前处于试运营阶段，部分功能不方便展示)",
+    gallery: [
+      {
+        image: zkda1Url,
+        description: "平台地图态势页面。",
+      },
+      {
+        image: zkda2Url,
+        description: "平台每日简报页面。",
+      },
+      {
+        image: zkda3Url,
+        imageFit: "contain",
+        description: "平台数据看板页面，汇总全球智库大事件，展示主题分布、来源机构排名、地区热度及各期简报数量趋势。",
+      },
+    ],
+  },
+  {
+    id: "mscc",
+    technologies: ["微信小程序", "uni-app x", "UTS", "TypeScript", "Node.js", "Fastify", "Drizzle ORM", "MySQL", "CloudBase 云托管", "微信支付", "Docker"],
+    name: "买手川川",
+    href: "",
+    qrCode: msccCodeUrl,
+    hideGallery: true,
+    overview: "“买手川川”是一款面向日常消费优惠场景的微信小程序，整合餐饮代下单与会员权益直充服务。用户可按城市与附近门店选购餐饮商品，在线支付后查看取餐码，也可分类检索音视频、办公教育、生活工具等会员权益并完成充值。系统打通微信登录、支付、供应商履约、订单状态同步及退款售后，并提供用户、订单和经营数据等管理员运营能力。",
+    gallery: [],
+  },
+  {
     id: "zpmf",
-    projectType: "落地项目",
     technologies: ["Dify", "node.js", "playwright", "React", "Nginx", "Python", "Java",  "Redis", "PostgreSQL", "Docker"],
     name: "智铺魔方",
     href: "",
@@ -153,54 +183,7 @@ export const projects = [
     ],
   },
   {
-    id: "mscc",
-    projectType: "落地项目",
-    technologies: ["微信小程序", "uni-app x", "UTS", "TypeScript", "Node.js", "Fastify", "Drizzle ORM", "MySQL", "CloudBase 云托管", "微信支付", "Docker"],
-    name: "买手川川",
-    href: "",
-    imageFit: "contain",
-    overview: "“买手川川”是一款面向日常消费优惠场景的微信小程序，整合餐饮代下单与会员权益直充服务。用户可按城市与附近门店选购餐饮商品，在线支付后查看取餐码，也可分类检索音视频、办公教育、生活工具等会员权益并完成充值。系统打通微信登录、支付、供应商履约、订单状态同步及退款售后，并提供用户、订单和经营数据等管理员运营能力。",
-    gallery: [
-      {
-        image: mscc1Url,
-        description: "小程序餐饮代下单首页，支持定位或手动选择城市，按品牌查找附近门店并进入选购。",
-      },
-      {
-        image: mscc2Url,
-        description: "小程序权益直充页面，按会员类型与品牌分类展示商品，支持关键词搜索、规格选择及在线购买。",
-      },
-      {
-        image: mscc3Url,
-        description: "小程序订单中心，按待支付、处理中、已完成、已取消及退款售后等状态查看订单，支持查询订单详情与取餐码。",
-      },
-    ],
-  },
-  {
-    id: "zkda",
-    projectType: "待落地项目",
-    technologies: ["n8n", "Nginx", "Proxy", "React", "Python", "Java", "PostgreSQL", "Docker"],
-    name: "智库底案(试运营)",
-    href: "http://47.109.76.18/",
-    overview: "面向智库报告等公开信息源，通过自动化工作流完成信息采集、处理、汇总及报告上传，并提供报告制作、专题编排、分类检索等能力，形成从公开信息采集到结构化报告交付的自动化链路。配套数据看板可视化展示主题分布、来源机构、地区热度与简报数量趋势，辅助快速掌握信息动态。(当前处于试运营阶段，部分功能不方便展示)",
-    gallery: [
-      {
-        image: zkda1Url,
-        description: "平台地图态势页面。",
-      },
-      {
-        image: zkda2Url,
-        description: "平台每日简报页面。",
-      },
-      {
-        image: zkda3Url,
-        imageFit: "contain",
-        description: "平台数据看板页面，汇总全球智库大事件，展示主题分布、来源机构排名、地区热度及各期简报数量趋势。",
-      },
-    ],
-  },
-  {
     id: "zigbee",
-    projectType: "实验项目",
     technologies: ["嵌入式", "C / C++", "PCB", "电路设计", "Qt", "Zigbee", "AI"],
     name: "物联网嵌入式项目",
     href: "",
@@ -226,11 +209,10 @@ export const projects = [
   },
   {
     id: "selflab",
-    projectType: "实验项目",
     technologies: ["React", "Nginx", "Java", "AI", "PostgreSQL", "Docker"],
     name: "SelfLab",
     href: "http://139.199.222.116/",
-    overview: "面向自媒体创作者，免费提供工具教程、创作引流变现指南、起号辅助等一站式辅助平台。（当前仅处于项目中期，内容并不完全符合需求，仅作为实验项目展示，且属于个人想法，不一定会结项）",
+    overview: "面向自媒体创作者的资源站，按创作方向整理工具、教程和起号指南，帮助创作者找到适合当前阶段的参考资料。目前为原型，部分内容待完善。",
     gallery: [
       {
         image: selflab1Url,

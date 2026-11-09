@@ -1,33 +1,108 @@
 # LULU LAB
 
-Lulu 的个人工作室。公开站包含一屏首页、项目档案及图集、游戏、Agent Skills、AIHot 和关于；旧学习资料仍可从 Skills 页进入。关于页保留个人物品胶囊，照片在展开后按需加载，素材存放在 `src/assets/picture/photo`。模块内容在视口内部滚动；到达底部继续滚动或点击“翻到页脚”，进入约三分之一屏的叠放页脚卡片，向上滚动、按 Escape 或点击“返回页面”即可返回，网页总高度不变。
+[LULU LAB](https://lululab.site/) 是 Lulu 的个人工作室网站，用来展示项目、游戏、开源 Agent Skills 和个人资料，也提供 AI 资讯阅读入口。
 
-游戏维护在 `src/data/labContent.js` 的 `games` 中。Skills 页的数据结构已就绪，目前 `agentSkills` 为空；只展示带有 `published: true` 且至少提供一个源码链接的条目。GitHub / Gitee 个人主页链接维护在 `authorProfiles` 中。原 `/repositories` 地址兼容至 `/skills`。
+| 模块 | 展示内容 | 维护方式 |
+| --- | --- | --- |
+| 首页 | 一屏展示站点介绍、标语、近况和模块索引 | 工作台发布。源码默认值在 [labContent.js](src/data/labContent.js) |
+| 项目 | 按名称逐项展示项目介绍、功能清单、技术结构、使用流程和体验入口 | 工作台管理基本资料。原有项目、扫码入口与功能清单来自 [siteContent.js](src/data/siteContent.js) 和 [projectShowcases.js](src/data/projectShowcases.js) |
+| 游戏 | 按名称切换游戏介绍和试玩入口 | 工作台管理 |
+| Skills | 按名称查看开源技能说明与源码，另有作者主页和学习资料入口 | [labContent.js](src/data/labContent.js) 的 `agentSkills` 和 `authorProfiles` |
+| AIHot | AIHOT 精选摘要与热点榜 | 服务端读取并按频道缓存上游数据 |
+| 关于 | 可翻转工牌、个人物品胶囊和「随手一拍」 | 照片放在 [photo](src/assets/picture/photo) 目录，展开图库时加载 |
 
-新增公开技能的字段示例（不是当前展示内容）：
+首页保持一屏，各模块在自己的内容区滚动。点击「翻到页脚」或在内容底部继续向下滚动，可打开叠放式页脚。Skills 列表展示带有 `published: true` 且至少提供一个仓库链接的条目。原 `/repositories` 地址会跳转到 `/skills`。
+
+新增公开技能的字段示例
 
 ```js
 { id: 'skill-id', name: '技能名', description: '用途说明', tags: ['领域'],
   github: 'https://github.com/你的账号/技能仓库', gitee: 'https://gitee.com/你的账号/技能仓库', published: true }
 ```
 
+## 线上更新指南
+
+生产服务器的检出目录是 `/opt/lululab`，部署来源为 [Gitee 的 main 分支](https://gitee.com/wpc_123/lulu-space/tree/main)。[GitHub](https://github.com/Adore1224/luluSpcae) 同步存放源码。代码和静态内容更新分三步。
+
+1. 在本地修改后运行 `npm run lint`、`npm run build`，将提交推送到 Gitee 的 `main`。
+2. 登录服务器，从 Git 拉取更新并重建容器。
+
+   ```bash
+   cd /opt/lululab
+   git pull --ff-only origin main && docker compose --profile https up -d --build --wait
+   ```
+
+3. 执行 `docker compose --profile https ps` 检查容器，再打开 [首页](https://lululab.site/) 和 [工作台](https://lululab.site/workbench) 验证。可用 `docker compose logs --tail=80 app` 查看应用日志，用 `docker compose --profile https logs --tail=80 caddy` 查看反代和证书日志。
+
+当前代码部署由上述命令触发。若接入定时任务或 CI，可在检测到新提交后执行同一套更新命令。工作台数据存放在 Docker 卷 `lululab_app_data`，重建容器时沿用。可用 `docker compose cp app:/var/lib/lululab/data ./lululab-data-backup` 备份数据目录。
+
+## 进入个人工作台
+
+工作台是隐藏路由，直接在浏览器打开 [https://lululab.site/workbench](https://lululab.site/workbench)，输入私密口令并点击「解锁工作台」。线上口令保存在服务器 `/opt/lululab/.env` 的 `LAB_WORKBENCH_PASSPHRASE` 字段，可在自己的服务器终端中查看。
+
+```bash
+sudo sed -n 's/^LAB_WORKBENCH_PASSPHRASE=//p' /opt/lululab/.env
+```
+
+| 板块 | 操作 |
+| --- | --- |
+| 后台中心 | 预览和发布首页文案，在线新建、编辑或发布项目和游戏，配置关联到项目的外部后台入口 |
+| 星标网站 | 用卡片打开网站，支持增删改查、分组和置顶 |
+| 头脑风暴 | 在同一张可缩放的画布上手绘和放置 Markdown 文字，保存后可按标题或正文搜索 |
+| 开源热点 | 浏览近期新建或有推送的 GitHub 仓库，按累计 Stars 排序，可一键收藏到星标网站 |
+
+保存并发布项目或游戏后，公开页面刷新即可读取。工作台编辑原有项目时可保留源码截图，也可录入自己的 HTTPS 截图地址。已打开且可见的首页约 30 秒内刷新已发布文案。发布内容无需重新构建。
+
+外部后台默认在新标签页打开。如需尝试页内预览，在服务器 `.env` 中用逗号分隔填写受信任的 HTTPS 来源，例如 `LAB_WORKBENCH_FRAME_ORIGINS=https://admin.example.com`，然后重建应用容器。目标后台还需允许本站嵌入，登录状态也取决于浏览器和目标站点的 Cookie 策略。每个入口都有新标签页按钮。[浏览器嵌入规则](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
+
+开源热点默认打开「GitHub Trending」日榜，也可以切换到周榜或月榜。站内沿用 [GitHub 公开趋势榜](https://github.com/trending) 的顺序，分别标出期间新增与累计 Stars。「仓库热度」使用 [GitHub 仓库搜索 API](https://docs.github.com/en/rest/search/search#search-repositories)，按创建或推送日期筛选后，以累计 Stars 排序。趋势榜从服务端读取，缓存 10 分钟，上游暂时不可用时可显示同一进程中的上次结果。可选的 `LAB_GITHUB_TOKEN` 仅用于服务端的仓库搜索。
+
+### 修改工作台口令
+
+在服务器终端执行 `sudoedit /opt/lululab/.env`，将 `LAB_WORKBENCH_PASSPHRASE` 改为自己记得住的 16–256 字符口令。保存后只重建应用容器，浏览器重新打开工作台并输入新口令。
+
+```bash
+cd /opt/lululab
+docker compose --profile https up -d --force-recreate app
+```
+
+口令由服务端校验，解锁会话有效期为四小时。主动锁定、服务重启或容器重建后，需要重新解锁。
+
+## 技术架构与 API
+
+前端使用 React 和 Vite。生产服务使用 Node.js 内置的 `node:http`，[server/index.js](server/index.js) 负责提供构建后的页面和静态资源，[server/api.js](server/api.js) 处理 HTTP 请求。Docker Compose 启动应用和 Caddy，由 Caddy 提供 HTTPS 并转发请求。
+
+API 采用 REST 风格的 HTTP 方法和 JSON 数据。首页与工作台内容存储在 `LAB_DATA_DIR` 的 JSON 文件中，解锁会话和资讯缓存在服务进程内存中。
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/api/home` | 读取已发布的首页文案 |
+| `GET` | `/api/catalog` | 读取项目和游戏的公开更新 |
+| `GET` | `/api/aihot/selected` | 读取精选列表 |
+| `GET` | `/api/aihot/hot` | 读取热点榜 |
+| `GET` | `/api/workbench/session` | 检查工作台是否已配置和解锁 |
+| `POST` | `/api/workbench/session` | 验证口令并创建解锁会话 |
+| `DELETE` | `/api/workbench/session` | 注销会话并锁定工作台 |
+| `PUT` | `/api/workbench/home` | 以已解锁会话发布首页文案 |
+| `GET` | `/api/workbench/:collection` | 读取项目、游戏、外部后台、星标或笔记 |
+| `PUT` / `DELETE` | `/api/workbench/:collection/:id` | 保存或删除记录 |
+| `GET` | `/api/workbench/github` | 读取 GitHub 热点 |
+
 ## 本地开发
 
-需要 Node.js 22.12+。运行 `npm ci` 和 `npm run dev`，Vite 会同时提供页面和本地 API。
+使用 Node.js 22.12 或更新版本。运行 `npm ci` 和 `npm run dev`，Vite 会同时提供页面和本地 API。
 
-如需试用工作台，将 `.env.example` 复制为 `.env`，把 `LAB_ORIGIN` 改为实际浏览器地址（例如 `http://localhost:5173`），设置一个至少 16 字符的独立随机口令，然后重启服务。浏览器直接访问 `/workbench` 解锁；公开页面不提供入口。不同端口或 `localhost` 与 `127.0.0.1` 不可混用。
+本地试用工作台时，将 `.env.example` 复制为 `.env`，设置至少 16 字符的独立随机口令，把 `LAB_ORIGIN` 设为浏览器实际使用的站点来源。若 Vite 启动在 `http://localhost:5173`，重启后访问 `http://localhost:5173/workbench`。协议、主机名和端口都需与 `LAB_ORIGIN` 一致。
 
-编辑器提供预览、撤销未发布修改和发布。发布后内容写入 `LAB_DATA_DIR/home.json`；首页新请求立即读取，已经打开的可见首页约 30 秒内刷新内容。更新不需重构建。工作台不注册账号；会话有效期四小时，主动锁定或重启服务会清除会话。
-
-## 部署到 lululab.site
+## 首次部署
 
 ### Docker Compose
 
-1. 在 Ubuntu 实例上准备 Git、[Docker Engine 和 Compose 插件](https://docs.docker.com/engine/install/ubuntu/)，执行 `docker compose version` 确认可用。首次部署时从 Gitee 拉取项目：
+1. 在 Ubuntu 实例上准备 Git、[Docker Engine 和 Compose 插件](https://docs.docker.com/engine/install/ubuntu/)，执行 `docker compose version` 确认可用。以有部署权限的用户从 Gitee 拉取项目。
 
    ```bash
-   git clone --branch main https://gitee.com/wpc_123/lulu-space.git ~/lululab
-   cd ~/lululab
+   git clone --branch main https://gitee.com/wpc_123/lulu-space.git /opt/lululab
+   cd /opt/lululab
    ```
 
    私有仓库可通过部署公钥为服务器配置只读访问。
@@ -46,14 +121,7 @@ LULULAB_NODE_IMAGE=mirror.ccs.tencentyun.com/library/node:22-bookworm-slim
 LULULAB_CADDY_IMAGE=mirror.ccs.tencentyun.com/library/caddy:2-alpine
 ```
 
-推送更新后，服务器可通过 Git 快进更新和 Compose 重建部署新版本。内置 Caddy 模式下执行：
-
-```bash
-cd ~/lululab
-git pull --ff-only origin main && docker compose --profile https up -d --build
-```
-
-沿用现有反代时省略 `--profile https`。首页发布数据存放在 Compose 数据卷 `lululab_app_data` 中，重建容器时继续使用该卷。首次发布后可在服务器运行 `docker compose cp app:/var/lib/lululab/data/home.json ./home.backup.json` 备份。更改口令后运行所选模式的 `docker compose up -d` 使容器读取新配置。
+沿用现有反代时，在更新命令中省略 `--profile https`。更改口令后运行所选模式的 `docker compose up -d` 使容器读取新配置。
 
 ### 直接运行 Node.js
 

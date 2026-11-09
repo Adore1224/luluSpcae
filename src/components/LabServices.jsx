@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, LockKeyhole, Radio, RefreshCw } from 'lucide-react';
-import { defaultHome, homeFields } from '../data/labContent';
+import { ArrowUpRight, Radio, RefreshCw } from 'lucide-react';
+import { api } from '../data/labApi';
 import LabCategoryNav from './LabCategoryNav';
 
 const channels = {
   selected: { title: '精选', detail: '最近七天的编辑精选', href: 'https://aihot.news/' },
   hot: { title: '热点榜', detail: '多来源聚合的当前热点', href: 'https://aihot.news/hot' },
 };
-
-async function api(path, options) {
-  const response = await fetch(path, { cache: 'no-store', ...options });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(payload.message || '服务暂不可用，请稍后再试。'), { status: response.status });
-  return payload;
-}
 
 export function NewsPage() {
   const [channel, setChannel] = useState('selected');
@@ -45,68 +38,5 @@ export function NewsPage() {
     </li>)}</ol>}
     <div className="lab-news-source"><span>项目来源 <a href="https://github.com/KKKKhazix/AIHOT" target="_blank" rel="noreferrer">KKKKhazix / AIHOT ↗</a></span><span>内容来源 <a href={source?.home ?? 'https://aihot.news'} target="_blank" rel="noreferrer">{source?.name ?? 'AIHOT'} ↗</a></span><span>摘要仅供浏览，完整内容见原文。</span></div>
     </section></div>
-  </main>;
-}
-
-const sendJson = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-
-export function Workbench() {
-  const [access, setAccess] = useState('checking');
-  const [passphrase, setPassphrase] = useState('');
-  const [published, setPublished] = useState(defaultHome);
-  const [draft, setDraft] = useState(defaultHome);
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState('');
-  const changed = homeFields.some(({ key }) => draft[key] !== published[key]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    api('/api/workbench/session', { signal: controller.signal }).then((data) => {
-      if (controller.signal.aborted) return;
-      setAccess(data.unlocked ? 'unlocked' : data.configured ? 'locked' : 'unconfigured');
-      if (data.home) { setPublished(data.home); setDraft(data.home); }
-    }).catch(() => { if (!controller.signal.aborted) setAccess('offline'); });
-    return () => controller.abort();
-  }, []);
-
-  async function unlock(event) {
-    event.preventDefault(); setPending(true); setMessage('');
-    try {
-      const data = await api('/api/workbench/session', sendJson('POST', { passphrase }));
-      setPassphrase(''); setPublished(data.home); setDraft(data.home); setAccess('unlocked');
-    } catch (error) { setMessage(error.message); }
-    finally { setPending(false); }
-  }
-
-  async function publish(event) {
-    event.preventDefault(); setPending(true); setMessage('');
-    try {
-      const data = await api('/api/workbench/home', sendJson('PUT', draft));
-      setPublished(data.home); setDraft(data.home); setMessage('已发布，访客刷新首页即可看到修改。');
-    } catch (error) {
-      if (error.status === 401) setAccess('locked');
-      setMessage(error.message);
-    } finally { setPending(false); }
-  }
-
-  async function lock() {
-    setPending(true); setMessage('');
-    try { await api('/api/workbench/session', { method: 'DELETE' }); setAccess('locked'); setDraft(defaultHome); }
-    catch (error) { setMessage(error.message); }
-    finally { setPending(false); }
-  }
-
-  return <main id="main-content" className="lab-page lab-workbench">
-    <header className="lab-page-heading"><p className="lab-kicker"><span />PRIVATE / OWNER ONLY</p><h1>个人工作台<i>.</i></h1><p>管理公开首页的站点介绍、标语与近况。</p></header>
-    {access === 'unlocked' ? <div className="lab-work-grid">
-      <form className="lab-panel lab-form" onSubmit={publish}><h2>编辑首页</h2>{homeFields.map(({ key, label, max }) => <label key={key}>{label}<span>{draft[key].length}/{max}</span>
-        {key === 'description' ? <textarea rows="4" value={draft[key]} required maxLength={max} onChange={(event) => setDraft({ ...draft, [key]: event.target.value })} /> : <input value={draft[key]} required maxLength={max} onChange={(event) => setDraft({ ...draft, [key]: event.target.value })} />}
-      </label>)}<div className="lab-card-links"><button className="lab-button" disabled={!changed || pending}>{pending ? '处理中…' : '发布到首页'}</button><button type="button" className="lab-plain" disabled={!changed || pending} onClick={() => { setDraft(published); setMessage(''); }}>撤销未发布修改</button></div>
-      <p role="status">{message}</p></form>
-      <aside className="lab-panel lab-work-preview"><p className="lab-kicker">PREVIEW / {changed ? '未发布' : '已发布'}</p><p>{draft.eyebrow}</p><strong>LULU LAB.</strong><h2>{draft.headline}</h2><p>{draft.description}</p><small>{draft.status}</small><div className="lab-card-links"><a className="lab-link" href="/" target="_blank" rel="noreferrer">打开首页 <ArrowUpRight size={16} /></a><button type="button" className="lab-plain" onClick={lock} disabled={pending}><LockKeyhole size={16} /> 锁定工作台</button></div></aside>
-    </div> : <div className="lab-panel lab-lock"><LockKeyhole size={29} /><h2>工作台已锁定</h2>
-      {access === 'locked' ? <form className="lab-form" onSubmit={unlock}><label>私密口令<input type="password" autoComplete="current-password" required maxLength={256} value={passphrase} onChange={(event) => setPassphrase(event.target.value)} /></label><button className="lab-button" disabled={pending}>{pending ? '正在验证…' : '解锁工作台'}</button></form> : <p role="status">{access === 'checking' ? '正在检查工作台状态…' : access === 'unconfigured' ? '工作台尚未配置私密口令。' : '工作台暂不可用，请确认服务端已启动。'}</p>}
-      {message && <p role="status">{message}</p>}
-    </div>}
   </main>;
 }

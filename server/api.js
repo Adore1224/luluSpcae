@@ -1,7 +1,8 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { defaultHome, homeFields } from '../src/data/labContent.js';
+import { createGitHubReader, createWorkbenchStore, httpError, workbenchFrameOrigins, workbenchRoute, writeJsonFile } from './workbench.js';
 
 const HOUR = 60 * 60 * 1000;
 const COOKIE = 'lululab_session';
@@ -15,17 +16,15 @@ function json(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
-function httpError(status, message) { return Object.assign(new Error(message), { status }); }
-
-async function readJson(req) {
+async function readJson(req, limit = 4096) {
   if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') throw httpError(415, '请求格式不正确。');
-  if (Number(req.headers['content-length']) > 4096) throw httpError(413, '提交的内容过长。');
+  if (Number(req.headers['content-length']) > limit) throw httpError(413, '提交的内容过长。');
   const chunks = [];
   let bytes = 0;
   // Keep the socket writable long enough to return a 413 for chunked uploads.
   for await (const chunk of req.iterator({ destroyOnReturn: false })) {
     bytes += chunk.length;
-    if (bytes > 4096) { req.resume(); throw httpError(413, '提交的内容过长。'); }
+    if (bytes > limit) { req.resume(); throw httpError(413, '提交的内容过长。'); }
     chunks.push(chunk);
   }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
@@ -108,6 +107,9 @@ export function createLabApi(env = process.env) {
   const sessions = new Map();
   const failures = [];
   const readNews = createNewsReader(env);
+  const workbench = createWorkbenchStore(dataDir);
+  const readGitHub = createGitHubReader(env);
+  const frameOrigins = workbenchFrameOrigins(env);
   const cookie = (token, maxAge) => `${COOKIE}=${token}; Path=/api/workbench; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure ? '; Secure' : ''}`;
   const getToken = (req) => req.headers.cookie?.match(/(?:^|;\s*)lululab_session=([\da-f]{64})(?:;|$)/)?.[1];
   const hash = (input) => createHash('sha256').update(input).digest();
@@ -119,24 +121,29 @@ export function createLabApi(env = process.env) {
   }
 
   return async (req, res, next) => {
-    const path = req.url.split('?')[0];
+    const [path, query] = req.url.split('?', 2);
     if (!path.startsWith('/api/')) { next(); return; }
     const method = req.method;
     try {
       if (path === '/api/home' && method === 'GET') { json(res, 200, await readHome()); return; }
+      if (path === '/api/catalog' && method === 'GET') { json(res, 200, await workbench.publicCatalog()); return; }
       const channel = path.startsWith('/api/aihot/') ? path.slice(11) : '';
       if (Object.hasOwn(channels, channel) && method === 'GET') { json(res, 200, await readNews(channel)); return; }
-      if (path !== '/api/workbench/session' && path !== '/api/workbench/home') { json(res, 404, { message: '接口不存在。' }); return; }
+      const resource = workbenchRoute(path);
+      if (!resource && !['/api/workbench/session', '/api/workbench/home', '/api/workbench/github'].includes(path)) { json(res, 404, { message: '接口不存在。' }); return; }
       res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       const now = Date.now();
       const token = getToken(req);
       const unlocked = configured && token && (sessions.get(token) ?? 0) > now;
+      const assertUnlocked = () => {
+        if (!configured || !token || (sessions.get(token) ?? 0) <= Date.now()) throw httpError(401, '工作台已锁定，请重新解锁。');
+      };
       if (method !== 'GET') {
         const requestOrigin = origin || `http://${req.headers.host}`;
         if (req.headers.origin !== requestOrigin || req.headers['sec-fetch-site'] === 'cross-site') throw httpError(403, '请从本站工作台操作。');
       }
       if (path === '/api/workbench/session') {
-        if (method === 'GET') { json(res, 200, { configured, unlocked: Boolean(unlocked), ...(unlocked ? { home: await readHome() } : {}) }); return; }
+        if (method === 'GET') { json(res, 200, { configured, unlocked: Boolean(unlocked), ...(unlocked ? { home: await readHome(), frameOrigins } : {}) }); return; }
         if (method === 'POST') {
           if (!configured) throw httpError(503, '工作台尚未配置私密口令。');
           while (failures.length && failures[0] <= now - 15 * 60_000) failures.shift();
@@ -152,22 +159,33 @@ export function createLabApi(env = process.env) {
           if (sessions.size >= 16) sessions.delete(sessions.keys().next().value);
           const newToken = randomBytes(32).toString('hex');
           sessions.set(newToken, now + sessionTtl);
-          json(res, 200, { unlocked: true, home }, { 'Set-Cookie': cookie(newToken, sessionTtl / 1000) }); return;
+          json(res, 200, { unlocked: true, home, frameOrigins }, { 'Set-Cookie': cookie(newToken, sessionTtl / 1000) }); return;
         }
         if (method === 'DELETE') {
           if (token) sessions.delete(token);
           json(res, 200, { unlocked: false }, { 'Set-Cookie': cookie('', 0) }); return;
         }
       }
+      if (path !== '/api/workbench/session') assertUnlocked();
       if (path === '/api/workbench/home' && method === 'PUT') {
-        if (!unlocked) throw httpError(401, '工作台已锁定，请重新解锁。');
         const home = validHome(await readJson(req));
-        if ((sessions.get(token) ?? 0) <= Date.now()) throw httpError(401, '工作台已锁定，请重新解锁。');
-        await mkdir(dataDir, { recursive: true, mode: 0o700 });
-        const temp = resolve(dataDir, `.home-${randomBytes(8).toString('hex')}.tmp`);
-        try { await writeFile(temp, `${JSON.stringify(home, null, 2)}\n`, { flag: 'wx', mode: 0o600 }); await rename(temp, homeFile); }
-        finally { await rm(temp, { force: true }); }
+        assertUnlocked();
+        await writeJsonFile(dataDir, homeFile, home);
         json(res, 200, { home }); return;
+      }
+      if (path === '/api/workbench/github' && method === 'GET') {
+        json(res, 200, await readGitHub(new URLSearchParams(query))); return;
+      }
+      if (resource) {
+        const { kind, id } = resource;
+        if (!id && method === 'GET') {
+          json(res, 200, { items: await workbench.read(kind) }); return;
+        }
+        if (id && (method === 'PUT' || method === 'DELETE')) {
+          const input = await readJson(req, method === 'DELETE' ? 4096 : kind === 'notes' ? 256 * 1024 : 64 * 1024);
+          const item = await workbench.mutate(kind, id, input, method === 'DELETE', assertUnlocked);
+          json(res, 200, { item }); return;
+        }
       }
       json(res, 405, { message: '此操作不受支持。' });
     } catch (error) {
