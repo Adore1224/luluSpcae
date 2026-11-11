@@ -2,7 +2,9 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { defaultHome, homeFields } from '../src/data/labContent.js';
+import { shareLimits } from '../src/data/workbench.js';
 import { createGitHubReader, createWorkbenchStore, httpError, workbenchFrameOrigins, workbenchRoute, writeJsonFile } from './workbench.js';
+import { parseShareForm, sendSharedFile } from './share.js';
 
 const HOUR = 60 * 60 * 1000;
 const COOKIE = 'lululab_session';
@@ -16,8 +18,7 @@ function json(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
-async function readJson(req, limit = 4096) {
-  if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') throw httpError(415, '请求格式不正确。');
+async function readBody(req, limit) {
   if (Number(req.headers['content-length']) > limit) throw httpError(413, '提交的内容过长。');
   const chunks = [];
   let bytes = 0;
@@ -27,7 +28,13 @@ async function readJson(req, limit = 4096) {
     if (bytes > limit) { req.resume(); throw httpError(413, '提交的内容过长。'); }
     chunks.push(chunk);
   }
-  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  return Buffer.concat(chunks, bytes);
+}
+
+async function readJson(req, limit = 4096) {
+  if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') throw httpError(415, '请求格式不正确。');
+  const body = await readBody(req, limit);
+  try { return JSON.parse(body.toString('utf8')); }
   catch { throw httpError(400, '请求内容无法读取。'); }
 }
 
@@ -127,6 +134,16 @@ export function createLabApi(env = process.env) {
     try {
       if (path === '/api/home' && method === 'GET') { json(res, 200, await readHome()); return; }
       if (path === '/api/catalog' && method === 'GET') { json(res, 200, await workbench.publicCatalog()); return; }
+      if (path === '/api/share' && method === 'GET') { json(res, 200, { items: await workbench.publicDocuments() }); return; }
+      const shareFile = /^\/api\/share\/([a-z0-9][a-z0-9-]{0,63})\/file$/.exec(path);
+      if (shareFile && (method === 'GET' || method === 'HEAD')) {
+        const item = (await workbench.read('documents')).find((entry) => entry.id === shareFile[1] && entry.published);
+        if (!item) throw httpError(404, '资料未发布或已下架。');
+        const version = new URLSearchParams(query).get('v');
+        if (version && item.file.key !== version) throw httpError(409, '资料已更新，请刷新页面。');
+        await sendSharedFile(req, res, item.file, workbench.documentPath(item.file.key));
+        return;
+      }
       const channel = path.startsWith('/api/aihot/') ? path.slice(11) : '';
       if (Object.hasOwn(channels, channel) && method === 'GET') { json(res, 200, await readNews(channel)); return; }
       const resource = workbenchRoute(path);
@@ -182,13 +199,21 @@ export function createLabApi(env = process.env) {
           json(res, 200, { items: await workbench.read(kind) }); return;
         }
         if (id && (method === 'PUT' || method === 'DELETE')) {
-          const input = await readJson(req, method === 'DELETE' ? 4096 : kind === 'notes' ? 256 * 1024 : 64 * 1024);
-          const item = await workbench.mutate(kind, id, input, method === 'DELETE', assertUnlocked);
+          let input, upload;
+          if (kind === 'documents' && method === 'PUT') {
+            const type = req.headers['content-type'];
+            if (type?.split(';')[0].trim() !== 'multipart/form-data') throw httpError(415, '请选择文件上传。');
+            ({ fields: input, upload } = await parseShareForm(type, await readBody(req, shareLimits.pdf + 64 * 1024)));
+          } else {
+            input = await readJson(req, method === 'DELETE' ? 4096 : kind === 'notes' ? 256 * 1024 : 64 * 1024);
+          }
+          const item = await workbench.mutate(kind, id, input, method === 'DELETE', assertUnlocked, upload);
           json(res, 200, { item }); return;
         }
       }
       json(res, 405, { message: '此操作不受支持。' });
     } catch (error) {
+      if (res.destroyed || res.headersSent) return;
       if (error.status) json(res, error.status, { message: error.message });
       else { console.error('Lab API:', error.code ?? error.name); json(res, 500, { message: '服务暂不可用，请稍后再试。' }); }
     }

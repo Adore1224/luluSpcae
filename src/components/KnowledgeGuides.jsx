@@ -51,7 +51,7 @@ const GuideHeader = ({ index, eyebrow, title, summary, takeaway, onNavigate }) =
 
   return (
     <header className="guide-header">
-      <a className="guide-back" href="/explore" onClick={goBack}><ArrowLeft size={15} /> 返回探索中心</a>
+      <a className="guide-back" href="/share" onClick={goBack}><ArrowLeft size={15} /> 返回分享</a>
       <div className="guide-meta"><span>{index}</span><i />{eyebrow}</div>
       <div className="guide-header-layout">
         <div>
@@ -121,7 +121,7 @@ const GuideFooter = ({ onNavigate, complete }) => {
 
   return (
     <footer className="knowledge-guide-footer">
-      <a href="/explore" onClick={goBack}><ArrowLeft size={15} /> 返回资料卡片</a>
+      <a href="/share" onClick={goBack}><ArrowLeft size={15} /> 返回分享</a>
       <span>{complete}</span>
       <a href="#main-content">回到顶部 <ArrowRight size={15} /></a>
     </footer>

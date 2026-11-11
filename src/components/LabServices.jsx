@@ -26,7 +26,7 @@ export function NewsPage() {
   const source = active?.source;
   const channelUrl = channel === 'hot' ? source?.hot ?? current.href : source?.home ?? current.href;
   return <main id="main-content" className="lab-page">
-    <header className="lab-page-heading"><p className="lab-kicker"><span />04 / AI RADAR</p><h1>AIHot<i>.</i></h1><p>一份简洁的 AI 资讯索引，沿着标题和摘要，回到消息的出处。</p></header>
+    <header className="lab-page-heading"><p className="lab-kicker"><span />04 / AI RADAR</p><h1>AI热点<i>.</i></h1><p>一份简洁的 AI 资讯索引，沿着标题和摘要，回到消息的出处。</p></header>
     <div className="lab-catalog-layout"><LabCategoryNav caption="CHANNELS" label="资讯频道" value={channel} onChange={setChannel} items={Object.entries(channels).map(([id, item]) => ({ id, label: item.title, detail: id === 'hot' ? 'Trending / Top 10' : 'Selected / Last 7 days' }))} />
     <section className="lab-news-channel" aria-label={current.title}>
     <div className="lab-news-bar"><span>{current.detail}</span><a className="lab-link" href={channelUrl} target="_blank" rel="noreferrer">前往 {source?.name ?? 'AIHOT'} · {current.title} <ArrowUpRight size={16} /></a></div>

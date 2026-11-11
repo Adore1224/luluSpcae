@@ -48,7 +48,7 @@
 .lab-button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; padding: .65rem 1rem; border-radius: 999px; color: #fff; background: #263a2d; font-size: .82rem; font-weight: 700; cursor: pointer; }
 .lab-button:hover:not(:disabled) { background: #496b53; }
 .lab-button:disabled, .lab-plain:disabled { opacity: .55; cursor: not-allowed; }
-.lab-home-index { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid var(--lab-rule); }
+.lab-home-index { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-block: 1px solid var(--lab-rule); }
 .lab-home-index a { min-height: 78px; min-width: 0; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: .8rem; padding: .75rem clamp(.55rem, 1.55vw, 1.25rem); }
 .lab-home-index a + a { border-left: 1px solid var(--lab-rule); }
 .lab-home-index a:hover { background: #ffffff69; }
@@ -303,7 +303,7 @@ body { overflow: hidden; }
   .lab-header { grid-template-columns: 1fr 1fr; grid-template-rows: 43px 1fr; }
   .lab-header-domain { display: block; }
   .lab-header nav { grid-column: 1/-1; grid-row: 2; justify-content: space-between; gap: .2rem; }
-  .lab-header nav a { gap: 0; padding: .55rem .48rem; font-size: 1rem; }
+  .lab-header nav a { gap: 0; padding: .55rem clamp(.24rem, 1vw, .48rem); font-size: 1rem; }
   .lab-catalog-layout { grid-template-columns: minmax(0, 1fr); gap: .9rem; }
   .lab-category-rail { position: relative; top: auto; padding: 0; }
   .lab-category-rail > .lab-kicker { padding: 0 .25rem .4rem; }
@@ -338,7 +338,7 @@ body { overflow: hidden; }
   .lab-header nav a { padding-block: .4rem; }
 }
 @media (max-width: 380px) {
-  .lab-header nav a { font-size: .88rem; padding-inline: .34rem; }
+  .lab-header nav a { font-size: .88rem; padding-inline: .26rem; }
 }
 @media (min-width: 540px) and (max-height: 510px) {
   .lab-shell { --lab-header-height: 52px; }

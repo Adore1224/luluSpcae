@@ -7,8 +7,9 @@
 | 首页 | 一屏展示站点介绍、标语、近况和模块索引 | 工作台发布。源码默认值在 [labContent.js](src/data/labContent.js) |
 | 项目 | 按名称逐项展示项目介绍、功能清单、技术结构、使用流程和体验入口 | 工作台管理基本资料。原有项目、扫码入口与功能清单来自 [siteContent.js](src/data/siteContent.js) 和 [projectShowcases.js](src/data/projectShowcases.js) |
 | 游戏 | 按名称切换游戏介绍和试玩入口 | 工作台管理 |
-| Skills | 按名称查看开源技能说明与源码，另有作者主页和学习资料入口 | [labContent.js](src/data/labContent.js) 的 `agentSkills` 和 `authorProfiles` |
-| AIHot | AIHOT 精选摘要与热点榜 | 服务端读取并按频道缓存上游数据 |
+| Skills | 按名称查看开源技能说明与源码，另有作者主页 | [labContent.js](src/data/labContent.js) 的 `agentSkills` 和 `authorProfiles` |
+| 分享 | 学习指南、PDF 和 Markdown 在线阅读与下载 | 在工作台的「后台中心 → 分享资料」上传和发布文档 |
+| AI热点 | AIHOT 精选摘要与热点榜 | 服务端读取并按频道缓存上游数据 |
 | 关于 | 可翻转工牌、个人物品胶囊和「随手一拍」 | 照片放在 [photo](src/assets/picture/photo) 目录，展开图库时加载 |
 
 首页保持一屏，各模块在自己的内容区滚动。点击「翻到页脚」或在内容底部继续向下滚动，可打开叠放式页脚。Skills 列表展示带有 `published: true` 且至少提供一个仓库链接的条目。原 `/repositories` 地址会跳转到 `/skills`。
@@ -46,12 +47,14 @@ sudo sed -n 's/^LAB_WORKBENCH_PASSPHRASE=//p' /opt/lululab/.env
 
 | 板块 | 操作 |
 | --- | --- |
-| 后台中心 | 预览和发布首页文案，在线新建、编辑或发布项目和游戏，配置关联到项目的外部后台入口 |
+| 后台中心 | 发布首页文案、项目和游戏，管理分享文档及关联到项目的外部后台入口 |
 | 星标网站 | 用卡片打开网站，支持增删改查、分组和置顶 |
 | 头脑风暴 | 在同一张可缩放的画布上手绘和放置 Markdown 文字，保存后可按标题或正文搜索 |
 | 开源热点 | 浏览近期新建或有推送的 GitHub 仓库，按累计 Stars 排序，可一键收藏到星标网站 |
 
 保存并发布项目或游戏后，公开页面刷新即可读取。工作台编辑原有项目时可保留源码截图，也可录入自己的 HTTPS 截图地址。已打开且可见的首页约 30 秒内刷新已发布文案。发布内容无需重新构建。
+
+在「后台中心 → 分享资料」选择 PDF（最大 25 MB）或 UTF-8 Markdown（最大 1 MB），填写名称和简介。勾选「发布到分享页」后保存，访客即可在线阅读和下载原文件。编辑资料时可替换文件，取消勾选后保存即可下架。Markdown 文档可引用 HTTPS 图片。
 
 外部后台默认在新标签页打开。如需尝试页内预览，在服务器 `.env` 中用逗号分隔填写受信任的 HTTPS 来源，例如 `LAB_WORKBENCH_FRAME_ORIGINS=https://admin.example.com`，然后重建应用容器。目标后台还需允许本站嵌入，登录状态也取决于浏览器和目标站点的 Cookie 策略。每个入口都有新标签页按钮。[浏览器嵌入规则](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
 
@@ -72,20 +75,22 @@ docker compose --profile https up -d --force-recreate app
 
 前端使用 React 和 Vite。生产服务使用 Node.js 内置的 `node:http`，[server/index.js](server/index.js) 负责提供构建后的页面和静态资源，[server/api.js](server/api.js) 处理 HTTP 请求。Docker Compose 启动应用和 Caddy，由 Caddy 提供 HTTPS 并转发请求。
 
-API 采用 REST 风格的 HTTP 方法和 JSON 数据。首页与工作台内容存储在 `LAB_DATA_DIR` 的 JSON 文件中，解锁会话和资讯缓存在服务进程内存中。
+API 采用 REST 风格的 HTTP 方法。首页与工作台记录存储在 `LAB_DATA_DIR` 的 JSON 文件中，分享文件保存在同目录的 `share-files/` 下。解锁会话和资讯缓存在服务进程内存中。
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
 | `GET` | `/api/home` | 读取已发布的首页文案 |
 | `GET` | `/api/catalog` | 读取项目和游戏的公开更新 |
+| `GET` | `/api/share`、`/api/share/:id/file` | 读取已发布的分享资料和原文件 |
 | `GET` | `/api/aihot/selected` | 读取精选列表 |
 | `GET` | `/api/aihot/hot` | 读取热点榜 |
 | `GET` | `/api/workbench/session` | 检查工作台是否已配置和解锁 |
 | `POST` | `/api/workbench/session` | 验证口令并创建解锁会话 |
 | `DELETE` | `/api/workbench/session` | 注销会话并锁定工作台 |
 | `PUT` | `/api/workbench/home` | 以已解锁会话发布首页文案 |
-| `GET` | `/api/workbench/:collection` | 读取项目、游戏、外部后台、星标或笔记 |
+| `GET` | `/api/workbench/:collection` | 读取项目、游戏、分享资料、外部后台、星标或笔记 |
 | `PUT` / `DELETE` | `/api/workbench/:collection/:id` | 保存或删除记录 |
+| `PUT` | `/api/workbench/documents/:id` | 使用 multipart 表单保存资料信息或上传文件 |
 | `GET` | `/api/workbench/github` | 读取 GitHub 热点 |
 
 ## 本地开发
@@ -125,7 +130,7 @@ LULULAB_CADDY_IMAGE=mirror.ccs.tencentyun.com/library/caddy:2-alpine
 
 ### 直接运行 Node.js
 
-1. 在服务器准备 Node.js 22.12+，安装项目依赖并执行 `npm run build`。
+1. 在服务器准备 Node.js 22.13+，安装项目依赖并执行 `npm run build`。
 2. 在服务器私下创建 `.env`：设置 `LAB_ORIGIN=https://lululab.site`、强随机口令，以及服务用户可写的持久目录 `LAB_DATA_DIR`（例如 `/var/lib/lululab`）。保留 `HOST=127.0.0.1`、`PORT=4178`，以 `npm start` 运行。生产环境用 systemd 等进程管理器保持服务运行，并备份 `home.json`。不要上传包含口令的 `.env` 至源码仓库。
 3. 将域名解析至服务器，在 Nginx 或其他反代上配置 HTTPS。整个站点（含 `/api/` 与各模块路径）转发到 `127.0.0.1:4178`，保留 `Host`，不要缓存工作台与 `/api/`。示例 HTTPS 虚拟主机中的反代段：
 
@@ -140,10 +145,10 @@ LULULAB_CADDY_IMAGE=mirror.ccs.tencentyun.com/library/caddy:2-alpine
 
 4. 确认首页、项目详情、工作台锁定状态与口令解锁均可用。工作台口令和编辑权限只在服务端验证，生产 HTTPS 会话 Cookie 设置 `Secure`。
 
-## AIHot
+## AI热点
 
 使用 [AIHOT REST API](https://aihot.news/agent?tab=api) 的精选与热点榜。默认按个人非商业摘要阅读方式展示少量标题、摘要与出处；每个频道独立缓存，使用 ETag 和 `Retry-After`，不展示原文全文。页面分别标明 [KKKKhazix/AIHOT](https://github.com/KKKKhazix/AIHOT) 开源项目来源、实际数据站点，以及每条内容的原文链接。设置 `AIHOT_ENABLED=false` 可关闭实时取数。
 
 上游框架代码采用 MIT，但 [README](https://github.com/KKKKhazix/AIHOT#readme) 说明线上运营数据未包含在开源仓库内，[NOTICE](https://github.com/KKKKhazix/AIHOT/blob/main/NOTICE) 也区分了代码许可、品牌和第三方内容。继续使用 `aihot.news` 的数据须遵循其 [公开使用规则](https://aihot.news/terms)，公开镜像、批量再分发或商业用途不能仅靠来源标注获得授权。若自行部署开源引擎并使用自己的信源，将 `AIHOT_BASE_URL` 改为该实例的 HTTP(S) 根地址，并通过 `AIHOT_SOURCE_NAME` 设置实际内容站名，重启后即可接入。
 
-`npm run lint` 检查代码，`npm run build` 生成正式产物。仅部署 `dist/` 可展示默认首页和静态模块，但不会提供工作台发布和 AIHot 取数。
+`npm run lint` 检查代码，`npm run build` 生成正式产物。仅部署 `dist/` 可展示默认首页和静态模块，但不会提供工作台发布和 AI热点取数。

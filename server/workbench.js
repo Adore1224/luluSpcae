@@ -76,6 +76,11 @@ const validators = {
     ...catalogFields(data),
     description: text(data?.description, 1800, '游戏介绍', true),
   }),
+  documents: (data) => ({
+    name: name(data),
+    description: text(data?.description, 300, '资料简介'),
+    published: data?.published === true,
+  }),
   'admin-links': (data) => ({
     name: name(data),
     href: url(text(data?.href, 1500, '后台地址', true), '后台地址'),
@@ -116,6 +121,8 @@ export async function writeJsonFile(directory, file, data) {
 
 export function createWorkbenchStore(directory) {
   const fileFor = (kind) => resolve(directory, `workbench-${kind}.json`);
+  const documentDirectory = resolve(directory, 'share-files');
+  const documentPath = (key) => resolve(documentDirectory, key);
   let pending = Promise.resolve();
 
   async function read(kind) {
@@ -123,7 +130,7 @@ export function createWorkbenchStore(directory) {
     catch (error) { if (error.code === 'ENOENT') return []; throw error; }
   }
 
-  function mutate(kind, id, input, remove, assertUnlocked) {
+  function mutate(kind, id, input, remove, assertUnlocked, upload) {
     const fields = remove ? null : validators[kind](input);
     const operation = pending.then(async () => {
       assertUnlocked();
@@ -134,12 +141,41 @@ export function createWorkbenchStore(directory) {
       if (!existing && items.length >= (kind === 'notes' ? 100 : 300)) throw httpError(400, '已达到此板块的记录上限。');
       const next = items.filter((item) => item.id !== id);
       const item = fields && { ...fields, id, revision: randomUUID(), updatedAt: new Date().toISOString() };
+      if (kind === 'documents' && item) {
+        if (upload) {
+          item.file = { ...upload.info, key: item.revision };
+          await mkdir(documentDirectory, { recursive: true, mode: 0o700 });
+          try {
+            await writeFile(documentPath(item.file.key), upload.bytes, { flag: 'wx', mode: 0o600 });
+          } catch (error) {
+            if (error.code !== 'EEXIST') await discardDocument(item.file.key);
+            throw error;
+          }
+        } else if (existing?.file) item.file = existing.file;
+        else throw httpError(400, '请选择要上传的 PDF 或 Markdown 文件。');
+      }
       if (item) next.unshift(item);
-      await writeJsonFile(directory, fileFor(kind), next);
+      try { await writeJsonFile(directory, fileFor(kind), next); }
+      catch (error) {
+        if (upload) await discardDocument(item.file.key);
+        throw error;
+      }
+      if (kind === 'documents' && existing?.file && (remove || upload)) await discardDocument(existing.file.key);
       return item;
     });
     pending = operation.catch(() => {});
     return operation;
+  }
+
+  async function discardDocument(key) {
+    try { await rm(documentPath(key), { force: true }); }
+    catch (error) { console.error('Share file cleanup:', error.code ?? error.name); }
+  }
+
+  async function publicDocuments() {
+    return (await read('documents')).filter((item) => item.published).map(({ id, name, description, file }) => ({
+      id, name, description, type: file.type, size: file.size, version: file.key,
+    }));
   }
 
   async function publicCatalog() {
@@ -155,7 +191,7 @@ export function createWorkbenchStore(directory) {
     };
   }
 
-  return { read, mutate, publicCatalog };
+  return { read, mutate, publicCatalog, publicDocuments, documentPath };
 }
 
 export function workbenchFrameOrigins(env) {

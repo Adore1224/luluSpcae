@@ -1,0 +1,36 @@
+.share-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 275px), 1fr)); gap: .9rem; list-style: none; }
+.share-card { display: flex; flex-direction: column; align-items: start; gap: .55rem; min-height: 100%; padding: clamp(1rem, 2vw, 1.45rem); border: 1px solid var(--lab-rule); border-radius: 14px; background: #fcfcf4eb; overflow-wrap: anywhere; }
+.share-card:hover { border-color: #71947b; background: #fcfcf4; }
+.share-card-meta, .share-card-action { display: inline-flex; align-items: center; gap: .45rem; color: #456750; font-size: .82rem; font-weight: 700; }
+.share-card-meta svg { flex: none; }
+.share-card h2 { color: #263c2e; font-size: 1.18rem; text-wrap: initial; }
+.share-card p { color: #4d6554; font-size: .9rem; }
+.share-card-action { margin-top: auto; padding-top: .4rem; }
+.share-status { padding: .9rem 1rem; border: 1px solid var(--lab-rule); border-radius: 12px; background: #fcfcf4d9; }
+.share-page > [role='status'], .share-page > .share-status { margin-bottom: .9rem; }
+.share-back { margin-bottom: 1rem; }
+.share-reader-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .85rem; margin-bottom: 1.1rem; }
+.share-reader-heading h1 { margin: .35rem 0; color: #263c2e; font-size: clamp(1.9rem, 4.5vw, 3.5rem); overflow-wrap: anywhere; text-wrap: initial; }
+.share-reader-heading > div { min-width: 0; }
+.share-reader-heading p { max-width: 68ch; overflow-wrap: anywhere; }
+.share-format { color: #4b6d55; font-size: .83rem; font-weight: 700; }
+.share-markdown, .share-pdf { margin-inline: auto; border: 1px solid var(--lab-rule); border-radius: 14px; background: #fcfcf6; }
+.share-markdown { width: min(100%, 54rem); padding: clamp(1rem, 4vw, 2.4rem); color: #26382b; line-height: 1.75; overflow-wrap: anywhere; }
+.share-markdown > * + * { margin-top: 1rem; }
+.share-markdown :is(h1, h2, h3, h4) { line-height: 1.3; text-wrap: initial; }
+.share-markdown p { color: inherit; }
+.share-markdown :is(ol, ul) { padding-inline-start: 1.5rem; }
+.share-markdown a { color: #315d42; text-decoration: underline; }
+.share-markdown blockquote { padding: .4rem .85rem; border-inline-start: 3px solid #9eb5a1; background: #edf3e9; }
+.share-markdown :is(pre, table) { overflow-x: auto; }
+.share-markdown pre { padding: .75rem; border-radius: 8px; background: #e9efe6; }
+.share-markdown :not(pre) > code { padding: .1em .22em; border-radius: 4px; background: #e9efe6; }
+.share-markdown table { display: block; border-collapse: collapse; overflow-wrap: normal; }
+.share-markdown :is(th, td) { padding: .35rem .65rem; border: 1px solid var(--lab-rule); }
+.share-markdown th { background: #edf3e9; }
+.share-markdown img { max-width: 100%; height: auto; }
+.share-pdf { width: min(100%, 54rem); padding: clamp(.45rem, 2vw, 1rem); background: #e9efe6; }
+.share-pdf-controls { position: sticky; top: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5rem; margin-bottom: .7rem; padding-block: .2rem; background: #e9efe6; font-size: .85rem; }
+.share-pdf-controls button { display: inline-flex; align-items: center; gap: .3rem; min-height: 44px; padding-inline: .65rem; border: 1px solid var(--lab-rule); border-radius: 8px; color: #31553e; background: #fcfcf6; cursor: pointer; }
+.share-pdf-controls button:disabled { opacity: .45; cursor: default; }
+.share-pdf-sheet canvas { display: block; width: 100%; height: auto; background: #fff; }

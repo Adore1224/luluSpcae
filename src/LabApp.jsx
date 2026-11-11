@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { ArrowDown, ArrowRight, ArrowUpRight, CircleDot, FolderOpen, Gamepad2, Blocks, Radio, UserRound } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, CircleDot, FolderOpen, Gamepad2, Blocks, Radio, UserRound } from 'lucide-react';
 import CursorTrail from './components/CursorTrail';
 import { LabOrbit, LabRegistration } from './components/LabMotion';
 import LabStack from './components/LabStack';
@@ -8,7 +8,6 @@ import LabImageViewer from './components/LabImageViewer';
 import LabProjectShowcase from './components/LabProjectShowcase';
 import LabAbout from './components/LabAbout';
 import { NewsPage } from './components/LabServices';
-import ExploreCenter from './components/ExploreCenter';
 import ArchitectureGuide from './components/ArchitectureGuide';
 import { ChatGPTCodexGuide, ExtensionSystemGuide } from './components/KnowledgeGuides';
 import { defaultHome, agentSkills, authorProfiles } from './data/labContent';
@@ -19,13 +18,15 @@ import './Guide.css';
 import './Lab.css';
 
 const Workbench = lazy(() => import('./components/Workbench'));
+const SharePage = lazy(() => import('./components/SharePage'));
 
 const sections = [
   { path: '/', label: '首页' },
   { path: '/projects', label: '项目', icon: FolderOpen, detail: '产品与实践' },
   { path: '/games', label: '游戏', icon: Gamepad2, detail: '游戏与原型' },
   { path: '/skills', label: 'Skills', icon: Blocks, detail: 'Agent 技能' },
-  { path: '/aihot', label: 'AIHot', icon: Radio, detail: 'AI 资讯观察' },
+  { path: '/share', label: '分享', icon: BookOpen, detail: '文档与指南' },
+  { path: '/aihot', label: 'AI热点', icon: Radio, detail: 'AI 资讯观察' },
   { path: '/about', label: '关于', icon: UserRound, detail: 'Lulu 的个人介绍' },
 ];
 
@@ -138,12 +139,10 @@ function Skills() {
         <div className="lab-card-links">{skill.github && <External href={skill.github}>GitHub</External>}{skill.gitee && <External href={skill.gitee}>Gitee</External>}</div>
       </article>
     </div> : <section className="lab-skill-empty"><span className="lab-skill-empty-index" aria-hidden="true">00</span><div><p className="lab-kicker">NOT PUBLISHED YET</p><h2>还没有公开的技能</h2><p>有经过实践、适合分享的 Agent 技能后，会在这里发布说明和源码链接。</p></div></section>}
-    <a className="lab-link lab-archive-link" href="/explore">阅读旧站的学习资料 <ArrowRight size={16} /></a>
   </main>;
 }
 
 const oldGuides = {
-  '/explore': ExploreCenter,
   '/explore/commercial-architecture': ArchitectureGuide,
   '/explore/chatgpt-codex-workflow': ChatGPTCodexGuide,
   '/explore/mcp-skills-plugins': ExtensionSystemGuide,
@@ -151,6 +150,7 @@ const oldGuides = {
 
 function readPath() {
   const rawPath = location.pathname.replace(/\/+$/, '') || '/';
+  if (rawPath === '/explore') return '/share';
   return rawPath === '/repositories' ? '/skills' : rawPath;
 }
 
@@ -173,11 +173,12 @@ export default function LabApp() {
   }
 
   const privatePage = path === '/workbench';
+  const shareDocument = /^\/share\/([a-z0-9][a-z0-9-]{0,63})$/.exec(path)?.[1];
   const projectDetail = path.startsWith('/projects/');
   const { loading, projects, games } = useCatalog(path === '/projects' || path === '/games' || projectDetail);
   const project = projectDetail ? projects.find(({ id }) => path === `/projects/${id}`) : null;
   const OldGuide = oldGuides[path];
-  const title = privatePage ? '个人工作台' : project?.name ?? sections.find((section) => section.path === path)?.label ?? (OldGuide ? '学习资料' : '页面未找到');
+  const title = privatePage ? '个人工作台' : project?.name ?? sections.find((section) => section.path === path)?.label ?? (shareDocument || OldGuide ? '分享' : '页面未找到');
   useEffect(() => { document.title = `${title} · LULU LAB`; }, [title]);
   let content;
   if (privatePage) content = <Suspense fallback={<main id="main-content" className="lab-page" role="status">正在载入工作台…</main>}><Workbench /></Suspense>;
@@ -186,11 +187,12 @@ export default function LabApp() {
   else if (path === '/projects' || project) content = <Projects {...{ projects, selectProject }} project={project ?? projects[0]} />;
   else if (path === '/games') content = <Games games={games} />;
   else if (path === '/skills') content = <Skills />;
+  else if (path === '/share' || shareDocument) content = <Suspense fallback={<main id="main-content" className="lab-page" role="status">正在载入分享…</main>}><SharePage key={path} documentId={shareDocument} /></Suspense>;
   else if (path === '/aihot') content = <NewsPage />;
   else if (path === '/about') content = <LabAbout />;
   else if (OldGuide) content = <OldGuide />;
   else content = <main id="main-content" className="lab-page"><PageHeading number="404" eyebrow="NOT FOUND" title="页面未找到">这个地址没有对应的内容。</PageHeading><a className="lab-button" href="/">返回首页 <ArrowRight size={16} /></a></main>;
   return <div className={`lab-shell${path === '/' ? ' is-home' : ''}`}>
-    {!privatePage && <><LabOrbit /><CursorTrail /></>}<LabStack header={!privatePage && <Topbar path={path} />} enabled={!privatePage} home={path === '/'} scrollKey={path}>{content}</LabStack>
+    {!privatePage && <><LabOrbit /><CursorTrail /></>}<LabStack header={!privatePage && <Topbar path={OldGuide ? '/share' : path} />} enabled={!privatePage} home={path === '/'} scrollKey={path}>{content}</LabStack>
   </div>;
 }

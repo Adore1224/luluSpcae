@@ -169,8 +169,8 @@ const ArchitectureGuide = ({ onNavigate }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65 }}
         >
-          <a className="explore-back-link" href="/explore" onClick={goBack}>
-            <ArrowLeft size={16} /> 返回探索中心
+          <a className="explore-back-link" href="/share" onClick={goBack}>
+            <ArrowLeft size={16} /> 返回分享
           </a>
           <div className="architecture-index"><span>EXP.001</span><i /> PROJECT SYSTEMS</div>
           <h1>商用项目架构：<em>从能跑到能长期运营</em></h1>
@@ -389,7 +389,7 @@ const ArchitectureGuide = ({ onNavigate }) => {
       </section>
 
       <footer className="architecture-footer">
-        <a href="/explore" onClick={goBack}><ArrowLeft size={16} /> 回到探索中心</a>
+        <a href="/share" onClick={goBack}><ArrowLeft size={16} /> 返回分享</a>
         <div><span>EXP.001 COMPLETE</span><strong>你已经看懂一栋可以长期营业的软件建筑。</strong></div>
         <a href="#main-content">回到顶部 <ArrowRight size={16} /></a>
       </footer>

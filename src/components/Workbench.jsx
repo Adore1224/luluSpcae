@@ -15,7 +15,7 @@ const sections = [
   { id: 'notes', name: '头脑风暴', caption: 'IDEA NOTEBOOK', detail: '把想法写下来、画出来，随时回来接着想。', icon: NotebookPen },
   { id: 'github', name: '开源热点', caption: 'GITHUB RADAR', detail: '发现近期活跃的开源仓库，也可以直接查看 GitHub 趋势榜。', icon: Compass },
 ];
-const collections = ['projects', 'games', 'admin-links', 'bookmarks', 'notes'];
+const collections = ['projects', 'games', 'documents', 'admin-links', 'bookmarks', 'notes'];
 const endpoint = (kind) => `/api/workbench/${kind}`;
 
 function Desk({ session, onLock }) {
@@ -66,9 +66,17 @@ function Desk({ session, onLock }) {
 
   async function save(kind, input) {
     const id = input.id || crypto.randomUUID();
-    const { item } = await api(`${endpoint(kind)}/${id}`, sendJson('PUT', input));
+    let options = sendJson('PUT', input);
+    if (kind === 'documents') {
+      const { name, description, published, revision, upload } = input;
+      const body = new FormData();
+      body.set('metadata', JSON.stringify({ name, description, published, revision }));
+      if (upload) body.set('file', upload);
+      options = { method: 'PUT', body };
+    }
+    const { item } = await api(`${endpoint(kind)}/${id}`, options);
     setRecords((all) => ({ ...all, [kind]: [item, ...all[kind].filter((row) => row.id !== item.id)] }));
-    setMessage(kind === 'projects' || kind === 'games' ? item.published ? '已发布，访客刷新页面即可看到。' : '已保存为草稿。' : '已保存。');
+    setMessage(['projects', 'games', 'documents'].includes(kind) ? item.published ? '已发布，访客刷新页面即可看到。' : '已保存为草稿。' : '已保存。');
     return item;
   }
 
