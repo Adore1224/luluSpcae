@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import faviconUrl from "../assets/favicon.svg";
+import iconUrl from "../assets/icon.svg";
 
 const EntryLoader = () => {
   const overlayRef = useRef(null);
@@ -80,7 +80,7 @@ const EntryLoader = () => {
         <span className="loader-orbit" />
         <span className="loader-star">✦</span>
         <span className="loader-pencil">/ / /</span>
-        <img className="loader-mark" src={faviconUrl} alt="Lulu" />
+        <img className="loader-mark" src={iconUrl} alt="Lulu" />
       </div>
       <div className="loader-copy">
         <span>欢迎来到我的地盘！</span>

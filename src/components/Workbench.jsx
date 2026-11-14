@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, Check, CircleAlert, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
+import iconUrl from '../assets/icon.svg';
 import { api, sendJson } from '../data/labApi';
 import { deskProjects } from '../data/catalog';
 import { defaultHome, homeFields } from '../data/labContent';
@@ -119,7 +120,7 @@ function Desk({ session, onLock }) {
   const projects = deskProjects(records.projects);
   return <main id="main-content" className="desk">
     <aside className="desk-sidebar">
-      <a className="desk-brand" href="/" aria-label="返回 LULU LAB"><span className="desk-mark">L</span><span><strong>LULU LAB</strong><small>个人工作台</small></span></a>
+      <a className="desk-brand" href="/" aria-label="返回 LULU LAB"><img className="desk-mark" src={iconUrl} alt="" width="42" height="42" /><span><strong>LULU LAB</strong><small>个人工作台</small></span></a>
       <nav aria-label="工作台导航">
         {sections.map(({ id, name, icon: Icon }) => <button type="button" key={id} aria-current={id === sectionId ? 'page' : undefined} onClick={() => { setSectionId(id); setMessage(''); }}>
           <Icon size={19} /><span>{name}</span>
@@ -193,7 +194,7 @@ export default function Workbench() {
   if (session?.unlocked) return <Desk session={session} onLock={lock} />;
   return <main id="main-content" className="desk-gate">
     <section className="desk-gate-card">
-      <div className="desk-mark"><LockKeyhole size={22} /></div>
+      <img className="desk-mark" src={iconUrl} alt="" width="42" height="42" />
       <p className="desk-eyebrow">LULU LAB / OWNER ACCESS</p>
       <h1>个人工作台</h1>
       <p>网站管理、收藏和想法的私人空间。</p>

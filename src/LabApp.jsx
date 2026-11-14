@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, CircleDot, FolderOpen, Gamepad2, Blocks, Radio, UserRound } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, BookOpen, FolderOpen, Gamepad2, Blocks, Radio, UserRound } from 'lucide-react';
+import iconUrl from './assets/icon.svg';
 import CursorTrail from './components/CursorTrail';
 import { LabOrbit, LabRegistration } from './components/LabMotion';
 import LabStack from './components/LabStack';
@@ -35,7 +36,7 @@ export const External = ({ href, children, className = 'lab-link' }) => <a class
 
 function Topbar({ path }) {
   return <header className="lab-header">
-    <a href="/" className="lab-brand" aria-label="LULU LAB 首页"><CircleDot size={25} /><strong>LULU<span> LAB</span></strong></a>
+    <a href="/" className="lab-brand" aria-label="LULU LAB 首页"><img src={iconUrl} alt="" width="25" height="25" /><strong>LULU<span> LAB</span></strong></a>
     <nav aria-label="主导航">{sections.map(({ path: link, label }) => <a key={link} href={link} aria-current={path === link || (link !== '/' && path.startsWith(`${link}/`)) ? 'page' : undefined}>{label}</a>)}</nav>
     <span className="lab-header-domain">LULULAB.SITE</span>
   </header>;

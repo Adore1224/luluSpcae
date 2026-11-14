@@ -36,7 +36,7 @@
 .desk-brand { padding: .25rem .35rem; }
 .desk-brand strong { display: block; font: 850 1.04rem/1.1 var(--font-latin); letter-spacing: -.045em; }
 .desk-brand small { display: block; margin-top: .28rem; color: var(--desk-soft); font-size: .73rem; }
-.desk-mark { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: #294333; color: #f4f8ed; font: 900 1.45rem/1 var(--font-latin); }
+.desk-mark { flex: none; width: 42px; height: 42px; object-fit: contain; }
 .desk-sidebar nav { display: grid; gap: .32rem; }
 .desk-sidebar nav button { width: 100%; min-height: 50px; padding: .8rem .75rem; border-radius: 10px; background: transparent; color: #415c49; text-align: left; cursor: pointer; }
 .desk-sidebar nav button:hover { background: #d9e5d7; }
