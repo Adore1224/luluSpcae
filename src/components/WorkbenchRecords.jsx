@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
-import { Boxes, FileText, Gamepad2, Globe2, Monitor, Plus, X } from 'lucide-react';
+import { Blocks, Boxes, FileText, Gamepad2, Globe2, Monitor, Plus, X } from 'lucide-react';
 import { homeFields } from '../data/labContent';
 import { matchSearch, noteTextBlocks } from '../data/workbench';
 import { NoteFields } from './WorkbenchNotes';
 import { DeskDialog, DeskEmpty, ExternalLink, Search } from './WorkbenchUi';
 
 const types = {
-  projects: '项目', games: '游戏', documents: '分享资料', 'admin-links': '后台入口', bookmarks: '星标网站', notes: '笔记',
+  projects: '项目', games: '游戏', skills: 'Skill', documents: '分享资料', 'admin-links': '后台入口', bookmarks: '星标网站', notes: '笔记',
 };
 
 function HomeEditor({ draft, setDraft, dirty, publish, busy, resetHome }) {
@@ -28,21 +28,27 @@ function HomeEditor({ draft, setDraft, dirty, publish, busy, resetHome }) {
   </div>;
 }
 
-const catalogTabs = [['home', '首页文案'], ['projects', '项目'], ['games', '游戏'], ['documents', '分享资料'], ['admin-links', '外部后台']];
+const catalogTabs = [['home', '首页文案'], ['projects', '项目'], ['games', '游戏'], ['skills', 'Skills'], ['documents', '分享资料'], ['admin-links', '外部后台']];
 
 export function CatalogDesk({ category, setCategory, projects, records, openEditor, remove, save, busy, setMessage, frameOrigins, confirmAction, ...home }) {
   const [query, setQuery] = useState('');
   const [frame, setFrame] = useState(null);
   const items = category === 'projects' ? projects : records[category] ?? [];
-  const filtered = items.filter((item) => matchSearch(query, item.name, item.id, item.description, item.overview, item.href, item.file?.name));
+  const filtered = items.filter((item) => matchSearch(query, item.name, item.id, item.description, item.overview, item.href, item.file?.name,
+    item.github, item.gitee, item.tags?.join(' ')));
 
   async function unpublish(item) {
-    try { await save('projects', { ...item, technologies: item.technologies?.join('，'), published: false }); }
+    const input = category === 'projects' ? { ...item, technologies: item.technologies?.join('，') } : item;
+    try { await save(category, { ...input, published: false }); }
     catch (error) { setMessage(error.message, true); }
   }
 
+  function confirmUnpublish(item, page) {
+    confirmAction({ title: `从${page}下架「${item.name}」？`, label: '下架', action: () => unpublish(item) });
+  }
+
   function removeRecord(item) {
-    if (item.sourceBacked) confirmAction({ title: `从公开项目页下架「${item.name}」？`, label: '下架', action: () => unpublish(item) });
+    if (item.sourceBacked) confirmUnpublish(item, '公开项目页');
     else remove(category, item);
   }
 
@@ -62,18 +68,21 @@ export function CatalogDesk({ category, setCategory, projects, records, openEdit
       {filtered.length ? <ul className="desk-list">{filtered.map((item) => {
         const admin = category === 'admin-links';
         const document = category === 'documents';
+        const skill = category === 'skills';
         const origin = admin ? new URL(item.href).origin : '';
         const embeddable = admin && origin !== location.origin && frameOrigins.includes(origin);
-        const Icon = admin ? Globe2 : document ? FileText : category === 'projects' ? Boxes : Gamepad2;
+        const Icon = admin ? Globe2 : document ? FileText : skill ? Blocks : category === 'projects' ? Boxes : Gamepad2;
         return <li className="desk-panel desk-record" key={item.id ?? item.name}>
           <span className="desk-record-icon"><Icon size={18} /></span>
-          <div className="desk-record-copy"><h2>{item.name}</h2><p>{admin ? projects.find(({ id }) => id === item.projectId)?.name || item.description || origin : item.file?.name || item.technologies?.slice(0, 3).join(' · ') || item.description}</p></div>
+          <div className="desk-record-copy"><h2>{item.name}</h2><p>{admin ? projects.find(({ id }) => id === item.projectId)?.name || item.description || origin : item.file?.name || (item.technologies ?? item.tags)?.slice(0, 3).join(' · ') || item.description}</p></div>
           {!admin && <span className="desk-pill" data-live={item.published}>{item.published ? '已发布' : '草稿'}</span>}
           <div className="desk-actions">
             {admin && <ExternalLink href={item.href}>打开后台</ExternalLink>}
             {document && item.published && <ExternalLink href={`/share/${item.id}`}>查看发布页</ExternalLink>}
+            {skill && item.published && <ExternalLink href="/skills">查看 Skills 页</ExternalLink>}
             {embeddable && <button type="button" className="desk-quiet" onClick={() => setFrame(item)}><Monitor size={15} /> 页内预览</button>}
             <button type="button" className="desk-quiet" onClick={() => openEditor(category, item)}>编辑</button>
+            {skill && item.published && <button type="button" className="desk-quiet" disabled={busy} onClick={() => confirmUnpublish(item, 'Skills 页')}>下架</button>}
             {(!item.sourceBacked || item.published) && <button type="button" className="desk-quiet desk-danger" disabled={busy} onClick={() => removeRecord(item)}>{item.sourceBacked ? '下架' : '删除'}</button>}
           </div>
         </li>;
@@ -101,10 +110,13 @@ function GalleryFields({ draft, change, originalCount }) {
 export function RecordDialog({ kind, item, projects, games, confirmAction, onSave, onClose }) {
   const catalog = kind === 'projects' || kind === 'games';
   const document = kind === 'documents';
+  const skill = kind === 'skills';
+  const publishable = catalog || document || skill;
   const [draft, setDraft] = useState(() => ({
     id: '', name: '', href: '', overview: '', description: '', category: '', projectId: '', published: false, pinned: false, body: '', drawing: [],
     ...item, technologies: item?.technologies?.join('，') ?? '', gallery: item?.gallery ?? [],
     ...(item?.sourceBacked && item.gallery === null ? { gallery: null } : {}),
+    ...(skill ? { github: item?.github ?? '', gitee: item?.gitee ?? '', tags: item?.tags?.join('，') ?? '' } : {}),
     ...(kind === 'notes' ? { body: '', textBlocks: noteTextBlocks(item) } : {}),
   }));
   const initial = useRef(JSON.stringify(draft));
@@ -128,7 +140,7 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
     setError('');
     setPending(true);
     try {
-      await onSave(kind, draft);
+      await onSave(kind, skill ? { ...draft, tags: draft.tags.split(/[,，、]/).map((tag) => tag.trim()).filter(Boolean) } : draft);
       onClose();
     } catch (failure) { setError(failure.message); }
     finally { setPending(false); }
@@ -147,6 +159,13 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
           {!item?.hideGallery && <GalleryFields {...{ draft, change }} originalCount={item?.originalCount} />}
         </>}
         {kind === 'games' && area('description', '游戏介绍', true, 1800)}
+        {skill && <>
+          {area('description', 'Skill 简介', true, 1800)}
+          {input('tags', '标签（逗号分隔）', { maxLength: 320 })}
+          {input('github', 'GitHub 仓库地址', { type: 'url', maxLength: 1500, placeholder: 'https://github.com/owner/repo' })}
+          {input('gitee', 'Gitee 仓库地址', { type: 'url', maxLength: 1500, placeholder: 'https://gitee.com/owner/repo' })}
+          <p>发布时至少填写一个仓库地址。</p>
+        </>}
         {document && <>
           {area('description', '资料简介', false, 300)}
           <label>{item ? '替换文件' : '选择文件'}
@@ -160,8 +179,8 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
           </label>
           <p id="desk-share-file-help">{item && `当前文件 ${item.file.name}。 `}支持 PDF（25 MB）和 UTF-8 Markdown（1 MB）。</p>
         </>}
-        {kind !== 'notes' && !document && input('href', kind === 'games' ? '试玩地址' : kind === 'admin-links' ? '后台地址' : '访问地址', { type: 'url', maxLength: 1500, required: !catalog, placeholder: 'https://…' })}
-        {(catalog || document) && <label className="desk-check"><input type="checkbox" checked={draft.published} onChange={(event) => change('published', event.target.checked)} />{document ? '发布到分享页' : '在公开网站展示'}</label>}
+        {kind !== 'notes' && !document && !skill && input('href', kind === 'games' ? '试玩地址' : kind === 'admin-links' ? '后台地址' : '访问地址', { type: 'url', maxLength: 1500, required: !catalog, placeholder: 'https://…' })}
+        {publishable && <label className="desk-check"><input type="checkbox" checked={draft.published} onChange={(event) => change('published', event.target.checked)} />{document ? '发布到分享页' : skill ? '发布到 Skills 页' : '在公开网站展示'}</label>}
         {(kind === 'admin-links' || kind === 'bookmarks') && area('description', '简短说明', false, 300)}
         {kind === 'admin-links' && <label>关联项目<select value={draft.projectId} onChange={(event) => change('projectId', event.target.value)}><option value="">独立入口</option>{projects.map(({ id, name: title }) => <option key={id} value={id}>{title}</option>)}</select></label>}
         {kind === 'bookmarks' && <>
@@ -171,7 +190,7 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
         {kind === 'notes' && <NoteFields {...{ draft, change, confirmAction }} />}
       </fieldset>
       {error && <p className="desk-error" role="alert">{error}</p>}
-      <div className="desk-actions"><button className="desk-button" disabled={pending}>{pending ? '正在保存…' : (catalog || document) && draft.published ? '保存并发布' : '保存'}</button><button type="button" className="desk-quiet" disabled={pending} onClick={dismiss}>取消</button></div>
+      <div className="desk-actions"><button className="desk-button" disabled={pending}>{pending ? '正在保存…' : publishable && draft.published ? '保存并发布' : '保存'}</button><button type="button" className="desk-quiet" disabled={pending} onClick={dismiss}>取消</button></div>
     </form>
   </DeskDialog>;
 }

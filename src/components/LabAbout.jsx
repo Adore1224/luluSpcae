@@ -12,7 +12,17 @@ export default function LabAbout() {
   const [photosOpen, setPhotosOpen] = useState(false);
 
   return <main id="main-content" className="lab-page lab-about">
-    <header className="lab-page-heading"><p className="lab-kicker"><span />PORTRAIT / LULU</p><h1>关于<i>.</i></h1><p>你好，我是 Lulu。这里留给工作之外的我，放些「随手一拍」的照片和喜欢的小物件。</p></header>
+    <header className="lab-page-heading">
+      <p className="lab-kicker"><span />PORTRAIT / LULU</p>
+      <h1>关于<i>.</i></h1>
+      <p>这里留给工作之外的我，当然如你有任何需要或者疑难问题欢迎联系：
+        <span className="lab-about-contacts">
+          <span className="lab-about-contact">邮箱：<a href="mailto:xiaowpc1224@gmail.com">xiaowpc1224@gmail.com</a></span>
+          {' '}
+          <span className="lab-about-contact">或 微信：<strong>xiaow_0012</strong></span>
+        </span>
+      </p>
+    </header>
     <div className="lab-about-layout">
       <section className="lab-badge-area" aria-label="Lulu 的个人工牌">
         <HangingBadge flipped={flipped} onFlippedChange={setFlipped} />

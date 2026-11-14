@@ -7,11 +7,12 @@ import LabCategoryNav from './components/LabCategoryNav';
 import LabImageViewer from './components/LabImageViewer';
 import LabProjectShowcase from './components/LabProjectShowcase';
 import LabAbout from './components/LabAbout';
-import { NewsPage } from './components/LabServices';
+import LabHot from './components/LabHot';
 import ArchitectureGuide from './components/ArchitectureGuide';
 import { ChatGPTCodexGuide, ExtensionSystemGuide } from './components/KnowledgeGuides';
-import { defaultHome, agentSkills, authorProfiles } from './data/labContent';
+import { defaultHome, authorProfiles } from './data/labContent';
 import { useCatalog } from './data/catalog';
+import { recordVisit } from './data/visitors';
 import './App.css';
 import './Explore.css';
 import './Guide.css';
@@ -26,7 +27,7 @@ const sections = [
   { path: '/games', label: '游戏', icon: Gamepad2, detail: '游戏与原型' },
   { path: '/skills', label: 'Skills', icon: Blocks, detail: 'Agent 技能' },
   { path: '/share', label: '分享', icon: BookOpen, detail: '文档与指南' },
-  { path: '/aihot', label: 'AI热点', icon: Radio, detail: 'AI 资讯观察' },
+  { path: '/hot', label: '热点', icon: Radio, detail: 'AI、Git 与网络热榜' },
   { path: '/about', label: '关于', icon: UserRound, detail: 'Lulu 的个人介绍' },
 ];
 
@@ -126,19 +127,19 @@ function Games({ games }) {
   </main>;
 }
 
-function Skills() {
+function Skills({ skills, unavailable }) {
   const [selected, setSelected] = useState(null);
-  const available = agentSkills.filter((skill) => skill.published === true && (skill.github || skill.gitee));
-  const skill = available.find(({ id }) => id === selected) ?? available[0];
+  const skill = skills.find(({ id }) => id === selected) ?? skills[0];
   return <main id="main-content" className="lab-page">
     <PageHeading number="03" eyebrow="AGENT SKILLS" title="Skills">把反复验证的做事方法，整理成 Agent 可以复用的技能。</PageHeading>
     <div className="lab-profile-strip"><span>我的开源主页</span><div className="lab-card-links"><External href={authorProfiles.github}>GitHub / Adore1224</External><External href={authorProfiles.gitee}>Gitee / wpc_123</External></div></div>
     {skill ? <div className="lab-catalog-layout">
-      <LabCategoryNav caption="SKILLS" label="切换技能" value={skill.id} onChange={setSelected} items={available.map(({ id, name }) => ({ id, label: name }))} />
+      <LabCategoryNav caption="SKILLS" label="切换技能" value={skill.id} onChange={setSelected} items={skills.map(({ id, name }) => ({ id, label: name }))} />
       <article className="lab-entry-panel"><Blocks size={30} aria-hidden="true" /><h2>{skill.name}</h2><p>{skill.description}</p>{tags(skill.tags)}
         <div className="lab-card-links">{skill.github && <External href={skill.github}>GitHub</External>}{skill.gitee && <External href={skill.gitee}>Gitee</External>}</div>
       </article>
-    </div> : <section className="lab-skill-empty"><span className="lab-skill-empty-index" aria-hidden="true">00</span><div><p className="lab-kicker">NOT PUBLISHED YET</p><h2>还没有公开的技能</h2><p>有经过实践、适合分享的 Agent 技能后，会在这里发布说明和源码链接。</p></div></section>}
+    </div> : unavailable ? <p className="lab-empty" role="status">暂时无法读取 Skills，请刷新后重试。</p>
+      : <section className="lab-skill-empty"><span className="lab-skill-empty-index" aria-hidden="true">00</span><div><p className="lab-kicker">NOT PUBLISHED YET</p><h2>还没有公开的技能</h2><p>有经过实践、适合分享的 Agent 技能后，会在这里发布说明和源码链接。</p></div></section>}
   </main>;
 }
 
@@ -151,6 +152,7 @@ const oldGuides = {
 function readPath() {
   const rawPath = location.pathname.replace(/\/+$/, '') || '/';
   if (rawPath === '/explore') return '/share';
+  if (rawPath === '/aihot') return '/hot';
   return rawPath === '/repositories' ? '/skills' : rawPath;
 }
 
@@ -175,9 +177,17 @@ export default function LabApp() {
   const privatePage = path === '/workbench';
   const shareDocument = /^\/share\/([a-z0-9][a-z0-9-]{0,63})$/.exec(path)?.[1];
   const projectDetail = path.startsWith('/projects/');
-  const { loading, projects, games } = useCatalog(path === '/projects' || path === '/games' || projectDetail);
+  const { loading, unavailable, projects, games, skills } = useCatalog(['/projects', '/games', '/skills'].includes(path) || projectDetail);
   const project = projectDetail ? projects.find(({ id }) => path === `/projects/${id}`) : null;
   const OldGuide = oldGuides[path];
+  const publicPage = sections.some((section) => section.path === path) || Boolean(project || shareDocument || OldGuide);
+  useEffect(() => {
+    if (!publicPage) return undefined;
+    const visit = (event) => { if (!event || event.persisted) recordVisit(); };
+    visit();
+    window.addEventListener('pageshow', visit);
+    return () => window.removeEventListener('pageshow', visit);
+  }, [path, publicPage]);
   const title = privatePage ? '个人工作台' : project?.name ?? sections.find((section) => section.path === path)?.label ?? (shareDocument || OldGuide ? '分享' : '页面未找到');
   useEffect(() => { document.title = `${title} · LULU LAB`; }, [title]);
   let content;
@@ -186,9 +196,9 @@ export default function LabApp() {
   else if (path === '/') content = <Home />;
   else if (path === '/projects' || project) content = <Projects {...{ projects, selectProject }} project={project ?? projects[0]} />;
   else if (path === '/games') content = <Games games={games} />;
-  else if (path === '/skills') content = <Skills />;
+  else if (path === '/skills') content = <Skills {...{ skills, unavailable }} />;
   else if (path === '/share' || shareDocument) content = <Suspense fallback={<main id="main-content" className="lab-page" role="status">正在载入分享…</main>}><SharePage key={path} documentId={shareDocument} /></Suspense>;
-  else if (path === '/aihot') content = <NewsPage />;
+  else if (path === '/hot') content = <LabHot />;
   else if (path === '/about') content = <LabAbout />;
   else if (OldGuide) content = <OldGuide />;
   else content = <main id="main-content" className="lab-page"><PageHeading number="404" eyebrow="NOT FOUND" title="页面未找到">这个地址没有对应的内容。</PageHeading><a className="lab-button" href="/">返回首页 <ArrowRight size={16} /></a></main>;

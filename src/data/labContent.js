@@ -17,8 +17,4 @@ export const authorProfiles = {
   gitee: 'https://gitee.com/wpc_123',
 };
 
-// Add only public skills: { id, name, description, tags: [], github?, gitee?, published: true }.
-// Links should point to the skill repository or its SKILL.md directory.
-export const agentSkills = [];
-
 export const games = [];

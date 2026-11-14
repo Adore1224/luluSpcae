@@ -8,7 +8,7 @@ const channels = {
   hot: { title: '热点榜', detail: '多来源聚合的当前热点', href: 'https://aihot.news/hot' },
 };
 
-export function NewsPage() {
+export function AiHotPanel() {
   const [channel, setChannel] = useState('selected');
   const [result, setResult] = useState(null);
   const [attempt, setAttempt] = useState(0);
@@ -25,8 +25,7 @@ export function NewsPage() {
   const current = channels[channel];
   const source = active?.source;
   const channelUrl = channel === 'hot' ? source?.hot ?? current.href : source?.home ?? current.href;
-  return <main id="main-content" className="lab-page">
-    <header className="lab-page-heading"><p className="lab-kicker"><span />04 / AI RADAR</p><h1>AI热点<i>.</i></h1><p>一份简洁的 AI 资讯索引，沿着标题和摘要，回到消息的出处。</p></header>
+  return <>
     <div className="lab-catalog-layout"><LabCategoryNav caption="CHANNELS" label="资讯频道" value={channel} onChange={setChannel} items={Object.entries(channels).map(([id, item]) => ({ id, label: item.title, detail: id === 'hot' ? 'Trending / Top 10' : 'Selected / Last 7 days' }))} />
     <section className="lab-news-channel" aria-label={current.title}>
     <div className="lab-news-bar"><span>{current.detail}</span><a className="lab-link" href={channelUrl} target="_blank" rel="noreferrer">前往 {source?.name ?? 'AIHOT'} · {current.title} <ArrowUpRight size={16} /></a></div>
@@ -38,5 +37,5 @@ export function NewsPage() {
     </li>)}</ol>}
     <div className="lab-news-source"><span>项目来源 <a href="https://github.com/KKKKhazix/AIHOT" target="_blank" rel="noreferrer">KKKKhazix / AIHOT ↗</a></span><span>内容来源 <a href={source?.home ?? 'https://aihot.news'} target="_blank" rel="noreferrer">{source?.name ?? 'AIHOT'} ↗</a></span><span>摘要仅供浏览，完整内容见原文。</span></div>
     </section></div>
-  </main>;
+  </>;
 }

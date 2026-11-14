@@ -23,6 +23,14 @@ function url(value, label, protocols = ['https:', 'http:']) {
   return parsed.href;
 }
 
+function skillRepository(value, host, label) {
+  const link = url(value, label, ['https:']);
+  if (!link) return '';
+  const { hostname, port, pathname } = new URL(link);
+  if (hostname !== host || port || pathname.split('/').filter(Boolean).length < 2) invalid(label);
+  return link;
+}
+
 function gallery(value) {
   if (value === null || value === undefined) return null;
   if (!Array.isArray(value) || value.length > 12) invalid('截图列表');
@@ -76,6 +84,22 @@ const validators = {
     ...catalogFields(data),
     description: text(data?.description, 1800, '游戏介绍', true),
   }),
+  skills: (data) => {
+    const github = skillRepository(data?.github, 'github.com', 'GitHub 仓库地址');
+    const gitee = skillRepository(data?.gitee, 'gitee.com', 'Gitee 仓库地址');
+    const published = data?.published === true;
+    if (published && !github && !gitee) throw httpError(400, '发布前请填写至少一个仓库地址。');
+    const tags = data?.tags ?? [];
+    if (!Array.isArray(tags) || tags.length > 12) invalid('Skill 标签，最多 12 个');
+    return {
+      name: name(data),
+      description: text(data?.description, 1800, 'Skill 简介', true),
+      tags: [...new Set(tags.map((tag) => text(tag, 32, 'Skill 标签，每个最多 32 字', true)))],
+      github,
+      gitee,
+      published,
+    };
+  },
   documents: (data) => ({
     name: name(data),
     description: text(data?.description, 300, '资料简介'),
@@ -179,13 +203,14 @@ export function createWorkbenchStore(directory) {
   }
 
   async function publicCatalog() {
-    const [projects, games] = await Promise.all([read('projects'), read('games')]);
+    const [projects, games, skills] = await Promise.all([read('projects'), read('games'), read('skills')]);
     const published = (items) => items.filter((item) => item.published)
       .map(({ revision: _revision, updatedAt: _updatedAt, sourceBacked: _sourceBacked, ...item }) => item);
     const hidden = (items) => items.filter((item) => item.sourceBacked && !item.published).map(({ id }) => id);
     return {
       projects: published(projects),
       games: published(games),
+      skills: published(skills),
       hiddenProjects: hidden(projects),
       hiddenGames: hidden(games),
     };

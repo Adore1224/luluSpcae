@@ -34,13 +34,15 @@ export function useCatalog(enabled) {
     api('/api/catalog', { signal: controller.signal }).then((result) => {
       if (!controller.signal.aborted) setData(result);
     }).catch(() => {
-      if (!controller.signal.aborted) setData({});
+      if (!controller.signal.aborted) setData({ unavailable: true });
     });
     return () => controller.abort();
   }, [enabled]);
   return {
     loading: enabled && !data,
+    unavailable: data?.unavailable === true,
     projects: mergeCatalog(projects, data?.projects, data?.hiddenProjects),
     games: mergeCatalog(games, data?.games, data?.hiddenGames),
+    skills: data?.skills ?? [],
   };
 }

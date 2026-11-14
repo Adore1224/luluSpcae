@@ -19,6 +19,7 @@ COPY --from=build /app/dist/ ./dist/
 COPY --from=build /app/server/ ./server/
 COPY --from=build /app/src/data/labContent.js ./src/data/labContent.js
 COPY --from=build /app/src/data/workbench.js ./src/data/workbench.js
+COPY --from=build /app/src/data/hotBoards.js ./src/data/hotBoards.js
 RUN install -d -m 700 -o node -g node /var/lib/lululab/data
 
 USER node

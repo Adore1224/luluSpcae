@@ -17,11 +17,13 @@ const types = {
   '.avif': 'image/avif', '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2',
   '.mjs': 'text/javascript; charset=utf-8', '.wasm': 'application/wasm',
 };
-const publicPage = /^\/(?:projects(?:\/[a-z0-9-]+)?|games|skills|share(?:\/[a-z0-9][a-z0-9-]{0,63})?|aihot|about|explore\/[a-z0-9-]+|workbench)?\/?$/;
+const publicPage = /^\/(?:projects(?:\/[a-z0-9-]+)?|games|skills|share(?:\/[a-z0-9][a-z0-9-]{0,63})?|hot|about|explore\/[a-z0-9-]+|workbench)?\/?$/;
 
 async function serve(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, { Allow: 'GET, HEAD' }); res.end(); return; }
-  const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  const { pathname, search } = new URL(req.url, 'http://localhost');
+  const path = decodeURIComponent(pathname);
+  if (/^\/aihot\/?$/.test(path)) { res.writeHead(308, { Location: '/hot' + search }); res.end(); return; }
   if (/^\/repositories\/?$/.test(path)) { res.writeHead(308, { Location: '/skills' }); res.end(); return; }
   if (/^\/explore\/?$/.test(path)) { res.writeHead(308, { Location: '/share' }); res.end(); return; }
   const asset = path.startsWith('/assets/');

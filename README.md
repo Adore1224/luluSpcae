@@ -7,9 +7,9 @@
 | 首页 | 一屏展示站点介绍、标语、近况和模块索引 | 工作台发布。源码默认值在 [labContent.js](src/data/labContent.js) |
 | 项目 | 按名称逐项展示项目介绍、功能清单、技术结构、使用流程和体验入口 | 工作台管理基本资料。原有项目、扫码入口与功能清单来自 [siteContent.js](src/data/siteContent.js) 和 [projectShowcases.js](src/data/projectShowcases.js) |
 | 游戏 | 按名称切换游戏介绍和试玩入口 | 工作台管理 |
-| Skills | 按名称查看开源技能说明与源码，另有作者主页 | [labContent.js](src/data/labContent.js) 的 `agentSkills` 和 `authorProfiles` |
+| Skills | 按名称查看开源技能说明与源码，另有作者主页 | 工作台的已发布 Skills，作者主页见 [labContent.js](src/data/labContent.js) |
 | 分享 | 学习指南、PDF 和 Markdown 在线阅读与下载 | 在工作台的「后台中心 → 分享资料」上传和发布文档 |
-| AI热点 | AIHOT 精选摘要与热点榜 | 服务端读取并按频道缓存上游数据 |
+| 热点 | 切换 AI 热点、Git 热点和网络热榜 | AIHOT、GitHub 与 UAPI |
 | 关于 | 可翻转工牌、个人物品胶囊和「随手一拍」 | 照片放在 [photo](src/assets/picture/photo) 目录，展开图库时加载 |
 
 首页保持一屏，各模块在自己的内容区滚动。点击「翻到页脚」或在内容底部继续向下滚动，可打开叠放式页脚。Skills 列表展示带有 `published: true` 且至少提供一个仓库链接的条目。原 `/repositories` 地址会跳转到 `/skills`。
@@ -47,18 +47,17 @@ sudo sed -n 's/^LAB_WORKBENCH_PASSPHRASE=//p' /opt/lululab/.env
 
 | 板块 | 操作 |
 | --- | --- |
-| 后台中心 | 发布首页文案、项目和游戏，管理分享文档及关联到项目的外部后台入口 |
+| 后台中心 | 发布首页文案、项目、游戏和 Skills，管理分享文档及关联到项目的外部后台入口 |
 | 星标网站 | 用卡片打开网站，支持增删改查、分组和置顶 |
 | 头脑风暴 | 在同一张可缩放的画布上手绘和放置 Markdown 文字，保存后可按标题或正文搜索 |
-| 开源热点 | 浏览近期新建或有推送的 GitHub 仓库，按累计 Stars 排序，可一键收藏到星标网站 |
 
 保存并发布项目或游戏后，公开页面刷新即可读取。工作台编辑原有项目时可保留源码截图，也可录入自己的 HTTPS 截图地址。已打开且可见的首页约 30 秒内刷新已发布文案。发布内容无需重新构建。
+
+在「后台中心 → Skills」可填写名称、简介、标签及 GitHub 或 Gitee 仓库地址。勾选「发布到 Skills 页」并保存后，访客刷新即可看到。下架会将该条目转回草稿，可再次编辑并发布。
 
 在「后台中心 → 分享资料」选择 PDF（最大 25 MB）或 UTF-8 Markdown（最大 1 MB），填写名称和简介。勾选「发布到分享页」后保存，访客即可在线阅读和下载原文件。编辑资料时可替换文件，取消勾选后保存即可下架。Markdown 文档可引用 HTTPS 图片。
 
 外部后台默认在新标签页打开。如需尝试页内预览，在服务器 `.env` 中用逗号分隔填写受信任的 HTTPS 来源，例如 `LAB_WORKBENCH_FRAME_ORIGINS=https://admin.example.com`，然后重建应用容器。目标后台还需允许本站嵌入，登录状态也取决于浏览器和目标站点的 Cookie 策略。每个入口都有新标签页按钮。[浏览器嵌入规则](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors)
-
-开源热点默认打开「GitHub Trending」日榜，也可以切换到周榜或月榜。站内沿用 [GitHub 公开趋势榜](https://github.com/trending) 的顺序，分别标出期间新增与累计 Stars。「仓库热度」使用 [GitHub 仓库搜索 API](https://docs.github.com/en/rest/search/search#search-repositories)，按创建或推送日期筛选后，以累计 Stars 排序。趋势榜从服务端读取，缓存 10 分钟，上游暂时不可用时可显示同一进程中的上次结果。可选的 `LAB_GITHUB_TOKEN` 仅用于服务端的仓库搜索。
 
 ### 修改工作台口令
 
@@ -71,6 +70,12 @@ docker compose --profile https up -d --force-recreate app
 
 口令由服务端校验，解锁会话有效期为四小时。主动锁定、服务重启或容器重建后，需要重新解锁。
 
+### 访客统计
+
+工作台侧栏显示累计、今日和近 7 个自然日的独立浏览器数，按北京时间划分日期，从启用统计后开始记录。公开页面首次访问时在该浏览器的站点存储里生成随机标识，刷新、切换页面及多标签页共用同一标识。服务端仅保存标识的哈希和最近访问日期，统计功能不使用 IP、账号或设备指纹。换浏览器、换设备或清除站点数据后，后续访问会作为新访客计入。
+
+统计排除工作台页面、能识别的常见爬虫以及开启 DNT 或 GPC 的请求。无法运行页面脚本或使用站点存储的浏览器可能不会计入。数据在 `LAB_DATA_DIR/visitors.sqlite`，沿用已有的 Docker 数据卷。
+
 ## 技术架构与 API
 
 前端使用 React 和 Vite。生产服务使用 Node.js 内置的 `node:http`，[server/index.js](server/index.js) 负责提供构建后的页面和静态资源，[server/api.js](server/api.js) 处理 HTTP 请求。Docker Compose 启动应用和 Caddy，由 Caddy 提供 HTTPS 并转发请求。
@@ -80,7 +85,7 @@ API 采用 REST 风格的 HTTP 方法。首页与工作台记录存储在 `LAB_D
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
 | `GET` | `/api/home` | 读取已发布的首页文案 |
-| `GET` | `/api/catalog` | 读取项目和游戏的公开更新 |
+| `GET` | `/api/catalog` | 读取项目、游戏和 Skills 的公开更新 |
 | `GET` | `/api/share`、`/api/share/:id/file` | 读取已发布的分享资料和原文件 |
 | `GET` | `/api/aihot/selected` | 读取精选列表 |
 | `GET` | `/api/aihot/hot` | 读取热点榜 |
@@ -88,14 +93,17 @@ API 采用 REST 风格的 HTTP 方法。首页与工作台记录存储在 `LAB_D
 | `POST` | `/api/workbench/session` | 验证口令并创建解锁会话 |
 | `DELETE` | `/api/workbench/session` | 注销会话并锁定工作台 |
 | `PUT` | `/api/workbench/home` | 以已解锁会话发布首页文案 |
-| `GET` | `/api/workbench/:collection` | 读取项目、游戏、分享资料、外部后台、星标或笔记 |
+| `GET` | `/api/workbench/:collection` | 读取项目、游戏、Skills、分享资料、外部后台、星标或笔记 |
 | `PUT` / `DELETE` | `/api/workbench/:collection/:id` | 保存或删除记录 |
 | `PUT` | `/api/workbench/documents/:id` | 使用 multipart 表单保存资料信息或上传文件 |
-| `GET` | `/api/workbench/github` | 读取 GitHub 热点 |
+| `GET` | `/api/hot/github` | 读取 GitHub Trending 或仓库热度 |
+| `GET` | `/api/hot/web/:platform` | 读取指定平台的网络热榜 |
+| `POST` | `/api/visits` | 接收来自本站公开页面的访客标识 |
+| `GET` | `/api/workbench/visitors` | 以已解锁会话读取访客统计 |
 
 ## 本地开发
 
-使用 Node.js 22.12 或更新版本。运行 `npm ci` 和 `npm run dev`，Vite 会同时提供页面和本地 API。
+使用 Node.js 22.13 或更新版本。运行 `npm ci` 和 `npm run dev`，Vite 会同时提供页面和本地 API。
 
 本地试用工作台时，将 `.env.example` 复制为 `.env`，设置至少 16 字符的独立随机口令，把 `LAB_ORIGIN` 设为浏览器实际使用的站点来源。若 Vite 启动在 `http://localhost:5173`，重启后访问 `http://localhost:5173/workbench`。协议、主机名和端口都需与 `LAB_ORIGIN` 一致。
 
@@ -145,10 +153,18 @@ LULULAB_CADDY_IMAGE=mirror.ccs.tencentyun.com/library/caddy:2-alpine
 
 4. 确认首页、项目详情、工作台锁定状态与口令解锁均可用。工作台口令和编辑权限只在服务端验证，生产 HTTPS 会话 Cookie 设置 `Secure`。
 
-## AI热点
+## 热点
+
+`/hot` 默认显示 AI 热点，旧的 `/aihot` 页面地址会跳转到这里。
+
+「Git热点」默认打开 [GitHub Trending](https://github.com/trending) 日榜，可切换周榜和月榜，沿用榜单顺序并标出期间新增与累计 Stars。「仓库热度」使用 [GitHub 仓库搜索 API](https://docs.github.com/en/rest/search/search#search-repositories)，按创建或推送日期筛选后，以累计 Stars 排序。仓库搜索可使用服务端的 `LAB_GITHUB_TOKEN`。结果缓存 10 分钟，工作台已解锁时可把仓库加入星标网站。
+
+「网络热点」使用 [UAPI 热榜](https://uapis.cn/docs/api-reference/get-misc-hotboard)。每个平台最多显示 20 条，保留来源排名，并按来源提供的字段展示热度、视频数或播放量。结果按平台缓存 5 分钟，暂时取数失败时可展示上次成功结果。
+
+### AI热点
 
 使用 [AIHOT REST API](https://aihot.news/agent?tab=api) 的精选与热点榜。默认按个人非商业摘要阅读方式展示少量标题、摘要与出处；每个频道独立缓存，使用 ETag 和 `Retry-After`，不展示原文全文。页面分别标明 [KKKKhazix/AIHOT](https://github.com/KKKKhazix/AIHOT) 开源项目来源、实际数据站点，以及每条内容的原文链接。设置 `AIHOT_ENABLED=false` 可关闭实时取数。
 
 上游框架代码采用 MIT，但 [README](https://github.com/KKKKhazix/AIHOT#readme) 说明线上运营数据未包含在开源仓库内，[NOTICE](https://github.com/KKKKhazix/AIHOT/blob/main/NOTICE) 也区分了代码许可、品牌和第三方内容。继续使用 `aihot.news` 的数据须遵循其 [公开使用规则](https://aihot.news/terms)，公开镜像、批量再分发或商业用途不能仅靠来源标注获得授权。若自行部署开源引擎并使用自己的信源，将 `AIHOT_BASE_URL` 改为该实例的 HTTP(S) 根地址，并通过 `AIHOT_SOURCE_NAME` 设置实际内容站名，重启后即可接入。
 
-`npm run lint` 检查代码，`npm run build` 生成正式产物。仅部署 `dist/` 可展示默认首页和静态模块，但不会提供工作台发布和 AI热点取数。
+`npm run lint` 检查代码，`npm run build` 生成正式产物。仅部署 `dist/` 可展示默认首页和静态模块。工作台发布和热点取数由服务端提供。

@@ -108,7 +108,7 @@ export const HangingBadge = ({ flipped, onFlippedChange }) => {
                   <i>{siteProfile.education}</i>
                 </span>
                 <span className="badge-flip-hint">
-                  <Rotate3D size={13} /> 背面还要内容哦！
+                  <Rotate3D size={13} /> 背面还有内容哦！
                 </span>
               </span>
               <span className="badge-face badge-back">

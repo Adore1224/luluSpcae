@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Check, CircleAlert, Compass, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
+import { ArrowUpRight, Check, CircleAlert, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
 import { api, sendJson } from '../data/labApi';
 import { deskProjects } from '../data/catalog';
 import { defaultHome, homeFields } from '../data/labContent';
 import { CatalogDesk, RecordDialog } from './WorkbenchRecords';
-import { Bookmarks, GitHubDesk } from './WorkbenchLinks';
+import { Bookmarks } from './WorkbenchLinks';
 import { NotesDesk } from './WorkbenchNotes';
 import { DeskConfirm } from './WorkbenchUi';
+import WorkbenchVisitors from './WorkbenchVisitors';
 import './Workbench.css';
 
 const sections = [
   { id: 'catalog', name: '后台中心', caption: 'SITE OPERATIONS', detail: '更新站点内容，集中打开各个项目的管理后台。', icon: LayoutGrid },
   { id: 'bookmarks', name: '星标网站', caption: 'LINK LIBRARY', detail: '把工作和生活中常用的网站收进自己的链接库。', icon: Star },
   { id: 'notes', name: '头脑风暴', caption: 'IDEA NOTEBOOK', detail: '把想法写下来、画出来，随时回来接着想。', icon: NotebookPen },
-  { id: 'github', name: '开源热点', caption: 'GITHUB RADAR', detail: '发现近期活跃的开源仓库，也可以直接查看 GitHub 趋势榜。', icon: Compass },
 ];
-const collections = ['projects', 'games', 'documents', 'admin-links', 'bookmarks', 'notes'];
+const collections = ['projects', 'games', 'skills', 'documents', 'admin-links', 'bookmarks', 'notes'];
 const endpoint = (kind) => `/api/workbench/${kind}`;
 
 function Desk({ session, onLock }) {
@@ -76,7 +76,7 @@ function Desk({ session, onLock }) {
     }
     const { item } = await api(`${endpoint(kind)}/${id}`, options);
     setRecords((all) => ({ ...all, [kind]: [item, ...all[kind].filter((row) => row.id !== item.id)] }));
-    setMessage(['projects', 'games', 'documents'].includes(kind) ? item.published ? '已发布，访客刷新页面即可看到。' : '已保存为草稿。' : '已保存。');
+    setMessage(['projects', 'games', 'skills', 'documents'].includes(kind) ? item.published ? '已发布，访客刷新页面即可看到。' : '已保存为草稿。' : '已保存。');
     return item;
   }
 
@@ -125,6 +125,7 @@ function Desk({ session, onLock }) {
           <Icon size={19} /><span>{name}</span>
         </button>)}
       </nav>
+      <WorkbenchVisitors />
       <div className="desk-sidebar-end">
         <span className="desk-session"><i /> 私有会话已解锁</span>
         <a href="/" target="_blank" rel="noreferrer">公开站点 <ArrowUpRight size={15} /></a>
@@ -146,7 +147,6 @@ function Desk({ session, onLock }) {
         {sectionId === 'catalog' && <CatalogDesk {...{ category, setCategory, projects, records, draft, setDraft, dirty, publish, busy, openEditor, save, setMessage }} remove={askRemove} confirmAction={setConfirmation} resetHome={() => setDraft(home)} frameOrigins={session.frameOrigins ?? []} />}
         {sectionId === 'bookmarks' && <Bookmarks items={records.bookmarks} {...{ openEditor, busy }} remove={askRemove} />}
         {sectionId === 'notes' && <NotesDesk items={records.notes} {...{ openEditor, busy }} remove={askRemove} />}
-        {sectionId === 'github' && <GitHubDesk bookmarks={records.bookmarks} save={save} setMessage={setMessage} />}
       </>}
     </div>
     <div className="desk-toast-region" aria-live="polite" aria-atomic="true">

@@ -5,9 +5,13 @@ import { defaultHome, homeFields } from '../src/data/labContent.js';
 import { shareLimits } from '../src/data/workbench.js';
 import { createGitHubReader, createWorkbenchStore, httpError, workbenchFrameOrigins, workbenchRoute, writeJsonFile } from './workbench.js';
 import { parseShareForm, sendSharedFile } from './share.js';
+import { createVisitorStore } from './visitors.js';
+import { createWebBoardReader, isWebBoard } from './hotboard.js';
 
 const HOUR = 60 * 60 * 1000;
 const COOKIE = 'lululab_session';
+const visitorId = /^[a-f0-9]{32}$/;
+const crawler = /bot\b|crawler|spider|slurp|headlesschrome|lighthouse/i;
 const channels = {
   selected: '/api/v1/items?mode=selected&window=7d&limit=6',
   hot: '/api/v1/hot-topics',
@@ -115,7 +119,9 @@ export function createLabApi(env = process.env) {
   const failures = [];
   const readNews = createNewsReader(env);
   const workbench = createWorkbenchStore(dataDir);
+  const visitors = createVisitorStore(dataDir);
   const readGitHub = createGitHubReader(env);
+  const readWebBoard = createWebBoardReader();
   const frameOrigins = workbenchFrameOrigins(env);
   const cookie = (token, maxAge) => `${COOKIE}=${token}; Path=/api/workbench; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure ? '; Secure' : ''}`;
   const getToken = (req) => req.headers.cookie?.match(/(?:^|;\s*)lululab_session=([\da-f]{64})(?:;|$)/)?.[1];
@@ -132,6 +138,18 @@ export function createLabApi(env = process.env) {
     if (!path.startsWith('/api/')) { next(); return; }
     const method = req.method;
     try {
+      if (path === '/api/visits' && method === 'POST') {
+        const requestOrigin = origin || `http://${req.headers.host}`;
+        if (req.headers.origin !== requestOrigin || req.headers['sec-fetch-site'] === 'cross-site') {
+          throw httpError(403, '请从本站页面访问。');
+        }
+        const { id } = (await readJson(req, 256)) ?? {};
+        if (typeof id !== 'string' || !visitorId.test(id)) throw httpError(400, '访客标识无效。');
+        const agent = req.headers['user-agent'];
+        if (agent && !crawler.test(agent) && req.headers['sec-gpc'] !== '1' && req.headers.dnt !== '1') visitors.visit(id);
+        res.writeHead(204, { 'Cache-Control': 'no-store' }).end();
+        return;
+      }
       if (path === '/api/home' && method === 'GET') { json(res, 200, await readHome()); return; }
       if (path === '/api/catalog' && method === 'GET') { json(res, 200, await workbench.publicCatalog()); return; }
       if (path === '/api/share' && method === 'GET') { json(res, 200, { items: await workbench.publicDocuments() }); return; }
@@ -146,8 +164,13 @@ export function createLabApi(env = process.env) {
       }
       const channel = path.startsWith('/api/aihot/') ? path.slice(11) : '';
       if (Object.hasOwn(channels, channel) && method === 'GET') { json(res, 200, await readNews(channel)); return; }
+      if (path === '/api/hot/github' && method === 'GET') {
+        json(res, 200, await readGitHub(new URLSearchParams(query))); return;
+      }
+      const platform = path.startsWith('/api/hot/web/') ? path.slice('/api/hot/web/'.length) : '';
+      if (isWebBoard(platform) && method === 'GET') { json(res, 200, await readWebBoard(platform)); return; }
       const resource = workbenchRoute(path);
-      if (!resource && !['/api/workbench/session', '/api/workbench/home', '/api/workbench/github'].includes(path)) { json(res, 404, { message: '接口不存在。' }); return; }
+      if (!resource && !['/api/workbench/session', '/api/workbench/home', '/api/workbench/github', '/api/workbench/visitors'].includes(path)) { json(res, 404, { message: '接口不存在。' }); return; }
       res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       const now = Date.now();
       const token = getToken(req);
@@ -184,6 +207,9 @@ export function createLabApi(env = process.env) {
         }
       }
       if (path !== '/api/workbench/session') assertUnlocked();
+      if (path === '/api/workbench/visitors' && method === 'GET') {
+        json(res, 200, visitors.summary()); return;
+      }
       if (path === '/api/workbench/home' && method === 'PUT') {
         const home = validHome(await readJson(req));
         assertUnlocked();

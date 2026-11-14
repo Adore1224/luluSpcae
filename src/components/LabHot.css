@@ -1,0 +1,32 @@
+.lab-hot-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.lab-hot-heading nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: .45rem 0; margin: .62rem 0 .7rem; }
+.lab-hot-heading nav button {
+  padding: .08em .36em;
+  border-left: 1px solid var(--lab-rule);
+  background: transparent;
+  color: #506457;
+  font-size: clamp(1.34rem, 4vw, 4.35rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -.055em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lab-hot-heading nav button:first-child { padding-left: 0; border-left: 0; }
+.lab-hot-heading nav button:hover, .lab-hot-heading nav button[aria-pressed='true'] { color: #25392d; }
+.lab-hot-heading nav button[aria-pressed='true']::after { content: ''; display: inline-block; width: .16em; height: .16em; margin-left: .09em; border-radius: 50%; background: #b8755c; }
+.lab-hot-controls, .lab-hot-metrics, .lab-hot-metadata { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .65rem; }
+.lab-hot-controls select { padding: .48rem .6rem; border: 1px solid #aec5ae; border-radius: 8px; background: #fcfcf4; color: #284635; font: inherit; }
+.lab-hot-controls h2 { color: #25392d; font-size: 1.05rem; }
+.lab-hot-metadata { justify-content: space-between; margin-bottom: .85rem; }
+.lab-hot-metadata, .lab-hot-status { font-size: .78rem; color: #4c6253; }
+.lab-hot-status { margin-bottom: .65rem; }
+.lab-news-list.lab-hot-list li { grid-template-columns: 2.4rem minmax(0, 1fr); align-items: baseline; }
+.lab-news-list.lab-hot-list h2 { margin: 0 0 .32rem; }
+.lab-hot-list h2 svg { vertical-align: middle; margin-left: .35em; }
+.lab-hot-metrics:not(:empty) { margin-top: .4rem; }
+.lab-hot-metrics span { padding: .18rem .5rem; border-radius: 999px; background: #e5ede2; color: #405c49; font-size: .73rem; font-variant-numeric: tabular-nums; }
+.lab-hot-metrics button { background: transparent; cursor: pointer; }
+@media (max-width: 600px) {
+  .lab-news-list.lab-hot-list li { grid-template-columns: 1.85rem minmax(0, 1fr); }
+}
