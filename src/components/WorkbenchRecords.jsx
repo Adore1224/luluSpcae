@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Blocks, Boxes, FileText, Gamepad2, Globe2, Monitor, Plus, X } from 'lucide-react';
 import { homeFields } from '../data/labContent';
-import { matchSearch, noteTextBlocks } from '../data/workbench';
+import { matchSearch, noteTextBlocks, projectTypes } from '../data/workbench';
 import { NoteFields } from './WorkbenchNotes';
 import { DeskDialog, DeskEmpty, ExternalLink, Search } from './WorkbenchUi';
 
@@ -35,7 +35,7 @@ export function CatalogDesk({ category, setCategory, projects, records, openEdit
   const [frame, setFrame] = useState(null);
   const items = category === 'projects' ? projects : records[category] ?? [];
   const filtered = items.filter((item) => matchSearch(query, item.name, item.id, item.description, item.overview, item.href, item.file?.name,
-    item.github, item.gitee, item.tags?.join(' ')));
+    item.github, item.gitee, item.tags?.join(' '), item.projectType));
 
   async function unpublish(item) {
     const input = category === 'projects' ? { ...item, technologies: item.technologies?.join('，') } : item;
@@ -74,7 +74,7 @@ export function CatalogDesk({ category, setCategory, projects, records, openEdit
         const Icon = admin ? Globe2 : document ? FileText : skill ? Blocks : category === 'projects' ? Boxes : Gamepad2;
         return <li className="desk-panel desk-record" key={item.id ?? item.name}>
           <span className="desk-record-icon"><Icon size={18} /></span>
-          <div className="desk-record-copy"><h2>{item.name}</h2><p>{admin ? projects.find(({ id }) => id === item.projectId)?.name || item.description || origin : item.file?.name || (item.technologies ?? item.tags)?.slice(0, 3).join(' · ') || item.description}</p></div>
+          <div className="desk-record-copy"><h2>{item.name}</h2><p>{admin ? projects.find(({ id }) => id === item.projectId)?.name || item.description || origin : item.file?.name || [item.projectType, ...(item.technologies ?? item.tags ?? []).slice(0, 3)].filter(Boolean).join(' · ') || item.description}</p></div>
           {!admin && <span className="desk-pill" data-live={item.published}>{item.published ? '已发布' : '草稿'}</span>}
           <div className="desk-actions">
             {admin && <ExternalLink href={item.href}>打开后台</ExternalLink>}
@@ -116,6 +116,7 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
     id: '', name: '', href: '', overview: '', description: '', category: '', projectId: '', published: false, pinned: false, body: '', drawing: [],
     ...item, technologies: item?.technologies?.join('，') ?? '', gallery: item?.gallery ?? [],
     ...(item?.sourceBacked && item.gallery === null ? { gallery: null } : {}),
+    ...(kind === 'projects' ? { projectType: item?.projectType ?? projectTypes[0] } : {}),
     ...(skill ? { github: item?.github ?? '', gitee: item?.gitee ?? '', tags: item?.tags?.join('，') ?? '' } : {}),
     ...(kind === 'notes' ? { body: '', textBlocks: noteTextBlocks(item) } : {}),
   }));
@@ -154,6 +155,9 @@ export function RecordDialog({ kind, item, projects, games, confirmAction, onSav
         {input('name', kind === 'notes' ? '笔记标题' : '名称', { required: true, maxLength: 100 })}
         {catalog && !item && input('id', '标识（小写英文、数字或短横线）', { required: true, pattern: '[a-z0-9][a-z0-9\\-]{0,63}', maxLength: 64, placeholder: 'my-project' })}
         {kind === 'projects' && <>
+          <label>项目类型<select value={draft.projectType} onChange={(event) => change('projectType', event.target.value)}>
+            {projectTypes.map((type) => <option key={type}>{type}</option>)}
+          </select></label>
           {area('overview', '项目介绍', true, 1800)}
           {input('technologies', '技术栈（逗号分隔）', { maxLength: 320 })}
           {!item?.hideGallery && <GalleryFields {...{ draft, change }} originalCount={item?.originalCount} />}

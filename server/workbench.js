@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { notePaper } from '../src/data/workbench.js';
+import { notePaper, projectTypes, resolveProjectType } from '../src/data/workbench.js';
 
 export function httpError(status, message) {
   return Object.assign(new Error(message), { status });
@@ -72,10 +72,16 @@ const catalogFields = (data) => ({
   sourceBacked: data?.sourceBacked === true,
 });
 
+function projectType(value) {
+  if (value === undefined) return undefined;
+  if (!projectTypes.includes(value)) invalid('项目类型（企业或个人）');
+  return value;
+}
+
 const validators = {
   projects: (data) => ({
     ...catalogFields(data),
-    projectType: text(data?.projectType, 30, '项目分类'),
+    projectType: projectType(data?.projectType),
     overview: text(data?.overview, 1800, '项目介绍', true),
     technologies: [...new Set(text(data?.technologies, 320, '技术栈').split(/[,，、]/).map((item) => item.trim()).filter(Boolean))],
     gallery: gallery(data?.gallery),
@@ -150,7 +156,10 @@ export function createWorkbenchStore(directory) {
   let pending = Promise.resolve();
 
   async function read(kind) {
-    try { return JSON.parse(await readFile(fileFor(kind), 'utf8')); }
+    try {
+      const items = JSON.parse(await readFile(fileFor(kind), 'utf8'));
+      return kind === 'projects' ? items.map((item) => ({ ...item, projectType: resolveProjectType(item) })) : items;
+    }
     catch (error) { if (error.code === 'ENOENT') return []; throw error; }
   }
 
@@ -165,6 +174,7 @@ export function createWorkbenchStore(directory) {
       if (!existing && items.length >= (kind === 'notes' ? 100 : 300)) throw httpError(400, '已达到此板块的记录上限。');
       const next = items.filter((item) => item.id !== id);
       const item = fields && { ...fields, id, revision: randomUUID(), updatedAt: new Date().toISOString() };
+      if (kind === 'projects' && item) item.projectType ??= existing?.projectType ?? resolveProjectType(item);
       if (kind === 'documents' && item) {
         if (upload) {
           item.file = { ...upload.info, key: item.revision };

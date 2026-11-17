@@ -79,12 +79,18 @@ export function PageHeading({ number, eyebrow, title, children }) {
 
 const tags = (items) => items?.length > 0 && <ul className="lab-tags" aria-label="技术与关键词">{items.map((item) => <li key={item}>{item}</li>)}</ul>;
 
+function ProjectTypeBadge({ type }) {
+  return <span className="lab-project-type" data-personal={type === '个人'}>{type}</span>;
+}
+
 function Projects({ projects, project, selectProject }) {
   return <main id="main-content" className="lab-page">
     <PageHeading number="01" eyebrow="PROJECT ARCHIVE" title="项目">选一个项目，看看它解决了什么问题、如何运转，以及用到哪些技术。</PageHeading>
     {project ? <div className="lab-catalog-layout">
       <LabCategoryNav caption="PROJECTS" label="切换项目" value={project.id} onChange={selectProject}
-        items={projects.map(({ id, name }) => ({ id, label: name, href: `/projects/${id}` }))} />
+        items={projects.map(({ id, name, projectType }) => ({
+          id, label: name, href: `/projects/${id}`, badge: <ProjectTypeBadge type={projectType} />,
+        }))} />
       <ProjectDetail key={project.id} project={project} />
     </div> : <p className="lab-empty">暂无公开项目。</p>}
   </main>;
@@ -98,7 +104,10 @@ function ProjectDetail({ project }) {
       <div className="lab-project-copy">
         <p className="lab-kicker">PROJECT / {project.id.toUpperCase()}</p>
         <div className="lab-project-title">
-          <h2 id="lab-project-name">{project.name}</h2>
+          <div className="lab-project-name">
+            <h2 id="lab-project-name">{project.name}</h2>
+            <ProjectTypeBadge type={project.projectType} />
+          </div>
           {project.href && <External href={project.href} className="lab-project-visit">立即访问</External>}
         </div>
         <p>{project.overview}</p>

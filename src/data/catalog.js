@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from './labApi';
 import { games } from './labContent';
 import { projects } from './siteContent';
+import { resolveProjectType } from './workbench';
+
+const withProjectType = (item) => ({ ...item, projectType: resolveProjectType(item) });
 
 export function deskProjects(records = []) {
   const overrides = new Map(records.map((record) => [record.id, record]));
@@ -13,7 +16,7 @@ export function deskProjects(records = []) {
       originalCount: source.gallery?.length ?? 0,
     };
   });
-  return [...builtIn, ...overrides.values()];
+  return [...builtIn, ...overrides.values()].map(withProjectType);
 }
 
 export function mergeCatalog(source, records = [], hidden = []) {
@@ -41,7 +44,7 @@ export function useCatalog(enabled) {
   return {
     loading: enabled && !data,
     unavailable: data?.unavailable === true,
-    projects: mergeCatalog(projects, data?.projects, data?.hiddenProjects),
+    projects: mergeCatalog(projects, data?.projects, data?.hiddenProjects).map(withProjectType),
     games: mergeCatalog(games, data?.games, data?.hiddenGames),
     skills: data?.skills ?? [],
   };

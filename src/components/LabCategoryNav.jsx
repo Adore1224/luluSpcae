@@ -21,7 +21,10 @@ export default function LabCategoryNav({ label, caption, items, value, onChange 
         : { type: 'button', 'aria-pressed': selected };
       return <Item key={item.id} {...attributes} onClick={(event) => onChange(item.id, event)}>
         <span className="lab-category-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-        <span><strong>{item.label}</strong>{item.detail && <small>{item.detail}</small>}</span>
+        <span>
+          <span className={item.badge ? 'lab-category-label' : undefined}><strong>{item.label}</strong>{item.badge}</span>
+          {item.detail && <small>{item.detail}</small>}
+        </span>
       </Item>;
     })}</nav>
   </aside>;
