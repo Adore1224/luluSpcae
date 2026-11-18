@@ -215,7 +215,7 @@
 @media (max-width: 600px) {
   .desk { grid-template-columns: minmax(0, 1fr); align-content: start; }
   .desk-sidebar { position: relative; height: auto; gap: .55rem; padding: .75rem .85rem; border-right: 0; border-bottom: 1px solid var(--desk-rule); }
-  .desk-sidebar nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; }
+  .desk-sidebar nav { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .25rem; }
   .desk-sidebar nav button { display: grid; justify-items: center; gap: .35rem; min-height: 55px; padding: .5rem .15rem; text-align: center; }
   .desk-sidebar nav button span { font-size: .82rem; }
   .desk-visitors dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }

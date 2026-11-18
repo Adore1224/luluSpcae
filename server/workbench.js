@@ -78,7 +78,18 @@ function projectType(value) {
   return value;
 }
 
+function agendaFields(data) {
+  const date = data?.date;
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) invalid('日期');
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) invalid('日期');
+  const time = text(data?.time, 5, '时间');
+  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) invalid('时间');
+  return { name: name(data), date, time, done: data?.done === true };
+}
+
 const validators = {
+  agenda: agendaFields,
   projects: (data) => ({
     ...catalogFields(data),
     projectType: projectType(data?.projectType),
@@ -171,7 +182,7 @@ export function createWorkbenchStore(directory) {
       const existing = items.find((item) => item.id === id);
       if ((existing?.revision ?? null) !== (input?.revision ?? null)) throw httpError(409, '这条记录已有更新。请刷新列表后重试。');
       if (remove && !existing) throw httpError(404, '记录不存在。');
-      if (!existing && items.length >= (kind === 'notes' ? 100 : 300)) throw httpError(400, '已达到此板块的记录上限。');
+      if (!existing && items.length >= (kind === 'agenda' ? 3000 : kind === 'notes' ? 100 : 300)) throw httpError(400, '已达到此板块的记录上限。');
       const next = items.filter((item) => item.id !== id);
       const item = fields && { ...fields, id, revision: randomUUID(), updatedAt: new Date().toISOString() };
       if (kind === 'projects' && item) item.projectType ??= existing?.projectType ?? resolveProjectType(item);

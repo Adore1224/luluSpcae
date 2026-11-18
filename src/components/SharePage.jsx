@@ -47,7 +47,10 @@ export default function SharePage({ documentId }) {
   }
 
   return <main id="main-content" className="lab-page share-page">
-    <header className="lab-page-heading"><h1>分享<i>.</i></h1></header>
+    <header className="lab-page-heading">
+      <p className="lab-kicker"><span />04 / SHARE LIBRARY</p>
+      <h1>分享<i>.</i></h1>
+    </header>
     {status}
     <ul className="share-grid">
       {data?.items?.map((item) => <li key={item.id}><a className="share-card" href={`/share/${item.id}`}>

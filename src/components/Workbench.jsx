@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Check, CircleAlert, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
+import { ArrowUpRight, Check, CircleAlert, House, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
 import iconUrl from '../assets/icon.svg';
 import { api, sendJson } from '../data/labApi';
 import { deskProjects } from '../data/catalog';
@@ -9,18 +9,20 @@ import { Bookmarks } from './WorkbenchLinks';
 import { NotesDesk } from './WorkbenchNotes';
 import { DeskConfirm } from './WorkbenchUi';
 import WorkbenchVisitors from './WorkbenchVisitors';
+import WorkbenchDashboard from './WorkbenchDashboard';
 import './Workbench.css';
 
 const sections = [
-  { id: 'catalog', name: '后台中心', caption: 'SITE OPERATIONS', detail: '更新站点内容，集中打开各个项目的管理后台。', icon: LayoutGrid },
-  { id: 'bookmarks', name: '星标网站', caption: 'LINK LIBRARY', detail: '把工作和生活中常用的网站收进自己的链接库。', icon: Star },
-  { id: 'notes', name: '头脑风暴', caption: 'IDEA NOTEBOOK', detail: '把想法写下来、画出来，随时回来接着想。', icon: NotebookPen },
+  { id: 'dashboard', name: '我的主页', icon: House },
+  { id: 'catalog', name: '我的后台', caption: 'SITE OPERATIONS', detail: '更新站点内容，集中打开各个项目的管理后台。', icon: LayoutGrid },
+  { id: 'bookmarks', name: '我的星标', caption: 'LINK LIBRARY', detail: '把工作和生活中常用的网站收进自己的链接库。', icon: Star },
+  { id: 'notes', name: '我的灵感', caption: 'IDEA NOTEBOOK', detail: '把想法写下来、画出来，随时回来接着想。', icon: NotebookPen },
 ];
-const collections = ['projects', 'games', 'skills', 'documents', 'admin-links', 'bookmarks', 'notes'];
+const collections = ['projects', 'games', 'skills', 'documents', 'admin-links', 'bookmarks', 'notes', 'agenda'];
 const endpoint = (kind) => `/api/workbench/${kind}`;
 
 function Desk({ session, onLock }) {
-  const [sectionId, setSectionId] = useState('catalog');
+  const [sectionId, setSectionId] = useState('dashboard');
   const [category, setCategory] = useState('home');
   const [home, setHome] = useState(session.home ?? defaultHome);
   const [draft, setDraft] = useState(home);
@@ -118,7 +120,7 @@ function Desk({ session, onLock }) {
   }
 
   const projects = deskProjects(records.projects);
-  return <main id="main-content" className="desk">
+  return <main id="main-content" className={sectionId === 'dashboard' ? 'desk desk-dashboard-page' : 'desk'}>
     <aside className="desk-sidebar">
       <a className="desk-brand" href="/" aria-label="返回 LULU LAB"><img className="desk-mark" src={iconUrl} alt="" width="42" height="42" /><span><strong>LULU LAB</strong><small>个人工作台</small></span></a>
       <nav aria-label="工作台导航">
@@ -126,7 +128,7 @@ function Desk({ session, onLock }) {
           <Icon size={19} /><span>{name}</span>
         </button>)}
       </nav>
-      <WorkbenchVisitors />
+      {sectionId !== 'dashboard' && <WorkbenchVisitors />}
       <div className="desk-sidebar-end">
         <span className="desk-session"><i /> 私有会话已解锁</span>
         <a href="/" target="_blank" rel="noreferrer">公开站点 <ArrowUpRight size={15} /></a>
@@ -138,9 +140,10 @@ function Desk({ session, onLock }) {
     </aside>
     <div className="desk-main">
       <header className="desk-heading">
-        <div><p className="desk-eyebrow">{section.caption}</p><h1>{section.name}</h1><p>{section.detail}</p></div>
+        <div>{section.caption && <p className="desk-eyebrow">{section.caption}</p>}<h1>{section.name}</h1>{section.detail && <p>{section.detail}</p>}</div>
         <span className="desk-private">OWNER / LULU</span>
       </header>
+      {sectionId === 'dashboard' && <WorkbenchDashboard records={records} ready={loadState === 'ready'} save={save} remove={askRemove} />}
       {loadState !== 'ready' ? <div className="desk-empty">
         <p role="status">{loadState === 'loading' ? '正在读取工作台数据…' : loadState}</p>
         {loadState !== 'loading' && <button type="button" className="desk-button" onClick={() => { setLoadState('loading'); setAttempt((n) => n + 1); }}>重新读取</button>}

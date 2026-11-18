@@ -14,7 +14,7 @@ export default function LabHot() {
   const { Panel } = sections.find(({ id }) => id === active);
   return <main id="main-content" className="lab-page">
     <header className="lab-page-heading lab-hot-heading">
-      <p className="lab-kicker"><span />04 / HOT TOPICS</p>
+      <p className="lab-kicker"><span />05 / HOT TOPICS</p>
       <h1 className="lab-hot-title">热点</h1>
       <nav aria-label="热点分类">
         {sections.map(({ id, label }) => <button type="button" key={id} aria-pressed={active === id}

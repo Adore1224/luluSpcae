@@ -53,7 +53,7 @@ export function CatalogDesk({ category, setCategory, projects, records, openEdit
   }
 
   return <>
-    <nav className="desk-tabs" aria-label="后台中心分类">
+    <nav className="desk-tabs" aria-label="我的后台分类">
       {catalogTabs.map(([id, title]) => <button type="button" key={id} aria-current={category === id ? 'page' : undefined}
         onClick={() => { setCategory(id); setQuery(''); setFrame(null); setMessage(''); }}>{title}</button>)}
     </nav>
