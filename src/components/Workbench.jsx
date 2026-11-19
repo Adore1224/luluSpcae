@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Check, CircleAlert, House, LayoutGrid, LockKeyhole, NotebookPen, Star } from 'lucide-react';
+import { ArrowUpRight, Check, CircleAlert, House, LayoutGrid, LockKeyhole, NotebookPen, Sparkles, Star } from 'lucide-react';
 import iconUrl from '../assets/icon.svg';
 import { api, sendJson } from '../data/labApi';
 import { deskProjects } from '../data/catalog';
@@ -10,6 +10,7 @@ import { NotesDesk } from './WorkbenchNotes';
 import { DeskConfirm } from './WorkbenchUi';
 import WorkbenchVisitors from './WorkbenchVisitors';
 import WorkbenchDashboard from './WorkbenchDashboard';
+import WorkbenchAgent from './WorkbenchAgent';
 import './Workbench.css';
 
 const sections = [
@@ -17,6 +18,7 @@ const sections = [
   { id: 'catalog', name: '我的后台', caption: 'SITE OPERATIONS', detail: '更新站点内容，集中打开各个项目的管理后台。', icon: LayoutGrid },
   { id: 'bookmarks', name: '我的星标', caption: 'LINK LIBRARY', detail: '把工作和生活中常用的网站收进自己的链接库。', icon: Star },
   { id: 'notes', name: '我的灵感', caption: 'IDEA NOTEBOOK', detail: '把想法写下来、画出来，随时回来接着想。', icon: NotebookPen },
+  { id: 'agent', name: '我的小Lu', icon: Sparkles },
 ];
 const collections = ['projects', 'games', 'skills', 'documents', 'admin-links', 'bookmarks', 'notes', 'agenda'];
 const endpoint = (kind) => `/api/workbench/${kind}`;
@@ -119,8 +121,21 @@ function Desk({ session, onLock }) {
     setConfirmation({ title: `删除「${item.name}」？`, label: '删除', action: () => remove(kind, item) });
   }
 
+  async function refreshAfterAgent({ kind }) {
+    try {
+      if (kind === 'home') {
+        const next = await api('/api/home');
+        setDraft((current) => Object.fromEntries(homeFields.map(({ key }) => [key, current[key] === home[key] ? next[key] : current[key]])));
+        setHome(next);
+      } else {
+        const { items } = await api(endpoint(kind));
+        setRecords((current) => ({ ...current, [kind]: items }));
+      }
+    } catch { setMessage('操作已完成，刷新页面即可查看更新。'); }
+  }
+
   const projects = deskProjects(records.projects);
-  return <main id="main-content" className={sectionId === 'dashboard' ? 'desk desk-dashboard-page' : 'desk'}>
+  return <main id="main-content" className={sectionId === 'dashboard' ? 'desk desk-dashboard-page' : 'desk'} data-section={sectionId}>
     <aside className="desk-sidebar">
       <a className="desk-brand" href="/" aria-label="返回 LULU LAB"><img className="desk-mark" src={iconUrl} alt="" width="42" height="42" /><span><strong>LULU LAB</strong><small>个人工作台</small></span></a>
       <nav aria-label="工作台导航">
@@ -128,7 +143,7 @@ function Desk({ session, onLock }) {
           <Icon size={19} /><span>{name}</span>
         </button>)}
       </nav>
-      {sectionId !== 'dashboard' && <WorkbenchVisitors />}
+      <WorkbenchVisitors />
       <div className="desk-sidebar-end">
         <span className="desk-session"><i /> 私有会话已解锁</span>
         <a href="/" target="_blank" rel="noreferrer">公开站点 <ArrowUpRight size={15} /></a>
@@ -151,6 +166,7 @@ function Desk({ session, onLock }) {
         {sectionId === 'catalog' && <CatalogDesk {...{ category, setCategory, projects, records, draft, setDraft, dirty, publish, busy, openEditor, save, setMessage }} remove={askRemove} confirmAction={setConfirmation} resetHome={() => setDraft(home)} frameOrigins={session.frameOrigins ?? []} />}
         {sectionId === 'bookmarks' && <Bookmarks items={records.bookmarks} {...{ openEditor, busy }} remove={askRemove} />}
         {sectionId === 'notes' && <NotesDesk items={records.notes} {...{ openEditor, busy }} remove={askRemove} />}
+        {sectionId === 'agent' && <WorkbenchAgent onApplied={refreshAfterAgent} />}
       </>}
     </div>
     <div className="desk-toast-region" aria-live="polite" aria-atomic="true">

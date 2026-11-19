@@ -174,13 +174,16 @@ export function createWorkbenchStore(directory) {
     catch (error) { if (error.code === 'ENOENT') return []; throw error; }
   }
 
-  function mutate(kind, id, input, remove, assertUnlocked, upload) {
+  const validate = (kind, input) => validators[kind](input);
+
+  function mutate(kind, id, input, remove, assertUnlocked, upload, guard) {
     const fields = remove ? null : validators[kind](input);
     const operation = pending.then(async () => {
       assertUnlocked();
       const items = await read(kind);
       const existing = items.find((item) => item.id === id);
       if ((existing?.revision ?? null) !== (input?.revision ?? null)) throw httpError(409, '这条记录已有更新。请刷新列表后重试。');
+      guard?.(items);
       if (remove && !existing) throw httpError(404, '记录不存在。');
       if (!existing && items.length >= (kind === 'agenda' ? 3000 : kind === 'notes' ? 100 : 300)) throw httpError(400, '已达到此板块的记录上限。');
       const next = items.filter((item) => item.id !== id);
@@ -237,7 +240,7 @@ export function createWorkbenchStore(directory) {
     };
   }
 
-  return { read, mutate, publicCatalog, publicDocuments, documentPath };
+  return { read, mutate, validate, publicCatalog, publicDocuments, documentPath };
 }
 
 export function workbenchFrameOrigins(env) {

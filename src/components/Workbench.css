@@ -215,12 +215,17 @@
 @media (max-width: 600px) {
   .desk { grid-template-columns: minmax(0, 1fr); align-content: start; }
   .desk-sidebar { position: relative; height: auto; gap: .55rem; padding: .75rem .85rem; border-right: 0; border-bottom: 1px solid var(--desk-rule); }
-  .desk-sidebar nav { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .25rem; }
+  .desk-sidebar nav { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .25rem; }
   .desk-sidebar nav button { display: grid; justify-items: center; gap: .35rem; min-height: 55px; padding: .5rem .15rem; text-align: center; }
   .desk-sidebar nav button span { font-size: .82rem; }
-  .desk-visitors dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .desk-sidebar nav button:last-child span { font-size: .7rem; white-space: nowrap; }
+  .desk-visitors { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .55rem; padding: .35rem .6rem; }
+  .desk-visitors h2 { font-size: .75rem; gap: .28rem; }
+  .desk-visitors dl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .3rem; text-align: center; }
   .desk-visitors dl > div:first-child { grid-column: auto; }
-  .desk-visitors dl > div:first-child dd { font-size: 1.02rem; line-height: inherit; }
+  .desk-visitors dt { font-size: .64rem; }
+  .desk-visitors dd, .desk-visitors dl > div:first-child dd { font-size: .95rem; line-height: 1.12; }
+  .desk-visitors-method { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .desk-sidebar-end { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .2rem .55rem; padding: .35rem 0 0; }
   .desk-heading { padding-bottom: .9rem; }
   .desk-private { display: none; }

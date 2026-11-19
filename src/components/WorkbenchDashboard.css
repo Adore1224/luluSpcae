@@ -20,9 +20,8 @@
 .dashboard-clock span:first-child { display: flex; align-items: center; gap: .35rem; }
 .dashboard-clock time { font: 750 clamp(1.65rem, 4.2vw, 2.75rem)/1 var(--font-latin); font-variant-numeric: tabular-nums; letter-spacing: -.055em; }
 
-.dashboard-planner, .dashboard-overview { display: grid; align-items: stretch; gap: .65rem; }
+.dashboard-planner { display: grid; align-items: stretch; gap: .65rem; }
 .dashboard-planner { grid-template-columns: minmax(0, .95fr) minmax(0, 1.3fr); }
-.dashboard-overview { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .desk-panel.dashboard-card { display: grid; min-width: 0; align-content: start; gap: .4rem; padding: .65rem .8rem; }
 .dashboard-card-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; }
 .dashboard-card h2 { display: flex; align-items: center; gap: .45rem; font-size: 1rem; }
@@ -63,10 +62,9 @@
 .dashboard-agenda-entry time { flex: none; color: var(--desk-soft); font-variant-numeric: tabular-nums; font-weight: 650; }
 .dashboard-agenda-group li button { flex: none; min-width: 34px; padding-inline: .45rem; }
 .dashboard-agenda-form { padding: .75rem; border: 1px solid var(--desk-rule); border-radius: 10px; background: #f0f5ee; }
-.dashboard-overview .desk-visitors { padding: .65rem .8rem; gap: .35rem; border-radius: 15px; align-content: start; }
-.dashboard-overview .desk-visitors h2 { font-size: 1rem; }
-.dashboard-overview .desk-visitors dl, .dashboard-library dl { display: flex; flex-wrap: wrap; gap: .35rem 1rem; }
-.dashboard-overview .desk-visitors dd, .dashboard-overview .desk-visitors dl > div:first-child dd, .dashboard-library dd { font-size: 1.22rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.desk-panel.dashboard-library { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .35rem 1rem; }
+.dashboard-library dl { display: flex; flex-wrap: wrap; gap: .35rem 1rem; }
+.dashboard-library dd { font-size: 1.22rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .dashboard-library dt { display: flex; align-items: center; gap: .35rem; color: var(--desk-soft); font-size: .78rem; }
 .dashboard-library dd { margin-top: .1rem; }
 
@@ -89,10 +87,10 @@
   .desk-dashboard-page .desk-heading { margin-bottom: .4rem; padding-bottom: .28rem; }
   .desk-dashboard-page .desk-heading h1 { font-size: 1.5rem; }
   .desk-dashboard-page .desk-main { padding: .3rem .75rem; }
-  .desk-dashboard, .dashboard-planner, .dashboard-overview { gap: .5rem; }
+  .desk-dashboard, .dashboard-planner { gap: .5rem; }
   .dashboard-welcome { flex-wrap: nowrap; gap: .5rem; padding-block: .35rem; }
   .dashboard-clock span { font-size: .7rem; white-space: nowrap; }
-  .desk-panel.dashboard-card, .dashboard-overview .desk-visitors { padding: .4rem .55rem; }
+  .desk-panel.dashboard-card { padding: .4rem .55rem; }
   .desk-panel.dashboard-calendar-card { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .dashboard-calendar-card .dashboard-card-head { align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: .3rem; }
   .dashboard-calendar-card :is(.dashboard-month, .dashboard-card-head) .desk-quiet { min-height: 26px; padding: .15rem .3rem; white-space: nowrap; }
@@ -103,10 +101,10 @@
   .dashboard-plan .dashboard-card-head p { margin-top: 0; line-height: 1.35; }
   .dashboard-agenda-group { gap: .18rem; padding-top: .32rem; }
   .dashboard-agenda-group > p { line-height: 1.4; }
-  .dashboard-overview .desk-visitors dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; }
-  .dashboard-library dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; }
-  .dashboard-overview :is(.desk-visitors, .dashboard-library) dt { font-size: .66rem; }
-  .dashboard-library dt { gap: .2rem; }
+  .dashboard-library dt { gap: .2rem; font-size: .7rem; }
   .dashboard-library dt svg { flex: none; width: 12px; }
-  .dashboard-overview .desk-visitors p { line-height: 1.4; }
+}
+
+@media (max-width: 360px) {
+  .dashboard-calendar button { line-height: 1.05; }
 }

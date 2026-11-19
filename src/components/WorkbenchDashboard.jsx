@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ListTodo, NotebookPen, Pencil, Plus, Star, Trash2 } from 'lucide-react';
-import WorkbenchVisitors from './WorkbenchVisitors';
 import './WorkbenchDashboard.css';
 
 const fullDate = new Intl.DateTimeFormat('zh-CN', { dateStyle: 'full' });
@@ -135,10 +134,10 @@ export default function WorkbenchDashboard({ records, ready, save, remove }) {
       <Calendar {...{ month, setMonth, today, selected, select, counts }} />
       <section className="desk-panel dashboard-card dashboard-plan" aria-labelledby="desk-plan-heading">
         <div className="dashboard-card-head">
-          <div><h2 id="desk-plan-heading"><ListTodo size={19} aria-hidden="true" /> {selected === today ? '今日安排' : '当日安排'}</h2>
+          <div><h2 id="desk-plan-heading"><ListTodo size={19} aria-hidden="true" /> {selected === today ? '今日待办' : '当日待办'}</h2>
             <p>{dayLabel.format(new Date(`${selected}T12:00:00`))}</p></div>
           <button className="desk-button" type="button" disabled={!ready || busy || draft !== null}
-            onClick={() => edit({ date: selected, name: '', time: '', done: false })}><Plus size={16} aria-hidden="true" /> 添加安排</button>
+            onClick={() => edit({ date: selected, name: '', time: '', done: false })}><Plus size={16} aria-hidden="true" /> 添加待办</button>
         </div>
         <div className="dashboard-plan-body" tabIndex={0} role="region" aria-label="日程和待办">
           {draft && <form className="desk-form dashboard-agenda-form" onSubmit={(event) => { event.preventDefault(); void persist(draft, true); }}>
@@ -157,15 +156,12 @@ export default function WorkbenchDashboard({ records, ready, save, remove }) {
         </div>
       </section>
     </div>
-    <div className="dashboard-overview">
-      <WorkbenchVisitors />
-      <section className="desk-panel dashboard-card dashboard-library" aria-labelledby="desk-library-heading">
-        <h2 id="desk-library-heading">工作台一览</h2>
-        <dl>
-          <div><dt><Star size={15} aria-hidden="true" /> 星标网站</dt><dd>{ready ? records.bookmarks.length : '—'}</dd></div>
-          <div><dt><NotebookPen size={15} aria-hidden="true" /> 灵感笔记</dt><dd>{ready ? records.notes.length : '—'}</dd></div>
-        </dl>
-      </section>
-    </div>
+    <section className="desk-panel dashboard-card dashboard-library" aria-labelledby="desk-library-heading">
+      <h2 id="desk-library-heading">工作台一览</h2>
+      <dl>
+        <div><dt><Star size={15} aria-hidden="true" /> 星标网站</dt><dd>{ready ? records.bookmarks.length : '—'}</dd></div>
+        <div><dt><NotebookPen size={15} aria-hidden="true" /> 灵感笔记</dt><dd>{ready ? records.notes.length : '—'}</dd></div>
+      </dl>
+    </section>
   </div>;
 }

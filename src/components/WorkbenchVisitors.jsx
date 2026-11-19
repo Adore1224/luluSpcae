@@ -30,7 +30,7 @@ export default function WorkbenchVisitors() {
         <div><dt>今日</dt><dd>{number.format(stats.today)}</dd></div>
         <div><dt>近 7 天</dt><dd>{number.format(stats.recent)}</dd></div>
       </dl>
-      <p>按浏览器去重</p>
+      <p className="desk-visitors-method">按浏览器去重</p>
     </>}
   </section>;
 }

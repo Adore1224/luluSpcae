@@ -7,6 +7,7 @@ import { createGitHubReader, createWorkbenchStore, httpError, workbenchFrameOrig
 import { parseShareForm, sendSharedFile } from './share.js';
 import { createVisitorStore } from './visitors.js';
 import { createWebBoardReader, isWebBoard } from './hotboard.js';
+import { createWorkbenchAgent, matchAgentRoute } from './agent.js';
 
 const HOUR = 60 * 60 * 1000;
 const COOKIE = 'lululab_session';
@@ -133,6 +134,20 @@ export function createLabApi(env = process.env) {
     catch (error) { if (error.code === 'ENOENT') return defaultHome; throw error; }
   }
 
+  let pendingHome = Promise.resolve();
+  function updateHome(change, assertUnlocked) {
+    const operation = pendingHome.then(async () => {
+      assertUnlocked();
+      const home = validHome(typeof change === 'function' ? change(await readHome()) : change);
+      assertUnlocked();
+      await writeJsonFile(dataDir, homeFile, home);
+      return home;
+    });
+    pendingHome = operation.catch(() => {});
+    return operation;
+  }
+  const agent = createWorkbenchAgent(dataDir, { workbench, readHome, updateHome, validHome });
+
   return async (req, res, next) => {
     const [path, query] = req.url.split('?', 2);
     if (!path.startsWith('/api/')) { next(); return; }
@@ -170,7 +185,8 @@ export function createLabApi(env = process.env) {
       const platform = path.startsWith('/api/hot/web/') ? path.slice('/api/hot/web/'.length) : '';
       if (isWebBoard(platform) && method === 'GET') { json(res, 200, await readWebBoard(platform)); return; }
       const resource = workbenchRoute(path);
-      if (!resource && !['/api/workbench/session', '/api/workbench/home', '/api/workbench/github', '/api/workbench/visitors'].includes(path)) { json(res, 404, { message: '接口不存在。' }); return; }
+      const agentRoute = matchAgentRoute(path);
+      if (!resource && !agentRoute && !['/api/workbench/session', '/api/workbench/home', '/api/workbench/github', '/api/workbench/visitors'].includes(path)) { json(res, 404, { message: '接口不存在。' }); return; }
       res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       const now = Date.now();
       const token = getToken(req);
@@ -207,13 +223,17 @@ export function createLabApi(env = process.env) {
         }
       }
       if (path !== '/api/workbench/session') assertUnlocked();
+      if (agentRoute) {
+        const input = method === 'POST' || method === 'PUT' ? await readJson(req, agentRoute.action === 'send' ? 192 * 1024 : 80 * 1024) : undefined;
+        const result = await agent.handle(agentRoute, method, input, new URLSearchParams(query), assertUnlocked);
+        json(res, 200, result);
+        return;
+      }
       if (path === '/api/workbench/visitors' && method === 'GET') {
         json(res, 200, visitors.summary()); return;
       }
       if (path === '/api/workbench/home' && method === 'PUT') {
-        const home = validHome(await readJson(req));
-        assertUnlocked();
-        await writeJsonFile(dataDir, homeFile, home);
+        const home = await updateHome(await readJson(req), assertUnlocked);
         json(res, 200, { home }); return;
       }
       if (path === '/api/workbench/github' && method === 'GET') {
